@@ -10,11 +10,12 @@ import my.test.mmf.core.util.MyRuntimeException;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
 public class MPackageImpl implements MPackage, IJDTWrapper {
 
-	protected final IPackageFragment jdtPackage;
+	private IPackageFragment jdtPackage;
 
 	@Override
 	public IJavaElement getJavaElement() {
@@ -33,7 +34,15 @@ public class MPackageImpl implements MPackage, IJDTWrapper {
 	@Override
 	public void setName(String name) {
 		try {
+			IJavaElement parent = jdtPackage.getParent();
 			jdtPackage.rename(name, true, MyMonitor.currentMonitor());
+			if( parent instanceof IPackageFragment ) {
+				//jdtPackage = ((IPackageFragment)parent).getPackageFragment(name);	v			
+			} else if( parent instanceof IPackageFragmentRoot ) {
+				jdtPackage = ((IPackageFragmentRoot)parent).getPackageFragment(name);				
+			} else {
+				throw new MyRuntimeException( "Invalid parent type: " + parent );
+			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Rename " + this + " to " + name, e);
 		}

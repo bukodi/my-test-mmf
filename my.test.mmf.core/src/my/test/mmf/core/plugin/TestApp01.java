@@ -21,12 +21,13 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 
 	@Override
 	public Object start(IApplicationContext context) throws Exception {
-		JavaCore.run(this, null);
+		//JavaCore.run(this, null);
+		run( null);
 		return null;
 	}
 
 	@Override
-	public void stop() {
+	public void stop() { 
 	}
 
 	@Override
@@ -36,17 +37,25 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 		System.out.println("Workspace location: "
 				+ wsRoot.getRawLocation().toOSString());
 		
+		//JavaCore.getJavaCore().necrLikeExtensions()
+		
 		IPackageFragmentRoot jdtSourceRoot = EclipseUtils
 				.getSrcRoot("/TestMMF01/src_model");
 		MRoot mroot = new MRootImpl(jdtSourceRoot );
 		List<MPackage> topLevelPkgs = mroot.getTopLevelPackages();
 		System.out.println(topLevelPkgs);
 		
-		MPackage testpkg = mroot.createTopLevelPackage("testpkg01");
+		final MPackage testpkg = mroot.createTopLevelPackage("testpkg01");
 		System.out.println( testpkg.getName());
-		testpkg.setName("testpkg01mod");
+		JavaCore.run(new IWorkspaceRunnable() {
+			
+			@Override
+			public void run(IProgressMonitor monitor) throws CoreException {
+				testpkg.setName("testpkg01mod4");
+			}
+		}, null);
 		System.out.println( testpkg.getName());
-		testpkg.remove();
+		testpkg.remove(); 
 
 		
 	}
