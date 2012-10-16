@@ -44,7 +44,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 		{
 			IWorkspaceRoot wsRoot = ResourcesPlugin.getWorkspace().getRoot();
 			wsRoot.refreshLocal(IResource.DEPTH_INFINITE, null);
-			System.out.println("Workspace location: "
+			System.out.println("Workspace location: " 
 					+ wsRoot.getRawLocation().toOSString());
 
 			// JavaCore.getJavaCore().necrLikeExtensions()
