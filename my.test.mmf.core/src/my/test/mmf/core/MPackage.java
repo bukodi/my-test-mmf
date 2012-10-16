@@ -2,12 +2,18 @@ package my.test.mmf.core;
 
 import java.util.List;
 
-public interface MPackage extends MPackageableElement {
+public interface MPackage  {
 
 	String getName();
 
 	void setName(String name);
 
-	List<MPackage> listSubpackages();
+	MRoot getRoot();
+
+	void remove(); 
+
+	List<MClass> listMClasses(); 
+
+	MClass createMClass( String name );
 
 }

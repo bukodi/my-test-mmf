@@ -4,7 +4,8 @@ import java.util.List;
 
 public interface MRoot {
 	
-	List<MPackage> getTopLevelPackages();
+	List<MPackage> listMPackages();
 	
-	MPackage createTopLevelPackage( String name );
+	MPackage createMPackage( String name );
+
 }

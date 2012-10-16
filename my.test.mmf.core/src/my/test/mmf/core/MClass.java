@@ -6,5 +6,9 @@ public interface MClass {
 
 	void setName(String name);
 
+	public MPackage getMPackage();	
+	
+	public void setMPackage( MPackage containerPackage );
 
+	public void remove();
 }

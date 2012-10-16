@@ -22,15 +22,15 @@ public class MRootImpl implements MRoot {
 	}
 
 	@Override
-	public List<MPackage> getTopLevelPackages() {
+	public List<MPackage> listMPackages() {
 		List<MPackage> topLevelPackages = new ArrayList<MPackage>();
 		try {
 			for( IJavaElement child : jdtSourceRoot.getChildren() ) {
 				if( ! (child instanceof IPackageFragment ))
 					continue;
 				String name = child.getElementName();
-				if( name == null || name.length() == 0 || name.contains("."))
-					continue;
+				if( name == null || name.length() == 0 )
+					continue; // Skip the default package
 				topLevelPackages.add(new MPackageImpl((IPackageFragment) child));
 			}
 		} catch (JavaModelException e) {
@@ -41,7 +41,7 @@ public class MRootImpl implements MRoot {
 	}
 
 	@Override
-	public MPackage createTopLevelPackage(String name) {
+	public MPackage createMPackage(String name) {
 		try {
 			IPackageFragment jdNewPkg = jdtSourceRoot.createPackageFragment(name, true, MyMonitor.currentMonitor());
 			return new MPackageImpl(jdNewPkg);

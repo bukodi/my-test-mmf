@@ -6,4 +6,8 @@ public interface MAttr {
 
 	void setName(String name);
 
+	MClass getMClass();
+
+	void remove(); 
+
 }
