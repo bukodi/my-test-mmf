@@ -19,9 +19,4 @@ public class MyRuntimeException extends RuntimeException {
 		super(message, cause);
 	}
 
-	public MyRuntimeException(String message, Throwable cause,
-			boolean enableSuppression, boolean writableStackTrace) {
-		super(message, cause, enableSuppression, writableStackTrace);
-	}
-
 }

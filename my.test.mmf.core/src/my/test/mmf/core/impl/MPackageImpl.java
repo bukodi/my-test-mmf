@@ -47,7 +47,6 @@ public class MPackageImpl implements MPackage {
 			jdtPkg = srcRoot.getPackageFragment(name);
 			jdtPackageInfo = jdtPkg
 					.getCompilationUnit(MRootImpl.PACKAGE_INFO_CLASS + ".java");
-			System.out.println(jdtPackageInfo);
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Rename " + this + " to " + name, e);
 		}
@@ -76,7 +75,7 @@ public class MPackageImpl implements MPackage {
 			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
 					.getParent();
 			for (ICompilationUnit cu : jdtPackage.getCompilationUnits()) {
-				if( MRootImpl.PACKAGE_INFO_CLASS.equals( cu.getElementName()) )
+				if( (MRootImpl.PACKAGE_INFO_CLASS + ".java").equals( cu.getElementName()) )
 					continue;
 				mclassList.add(new MClassImpl(cu));
 			}

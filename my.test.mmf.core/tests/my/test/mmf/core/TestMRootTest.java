@@ -81,7 +81,7 @@ public class TestMRootTest {
 	public static void tearDownAfterClass() throws Exception {
 		ResourcesPlugin.getWorkspace().save(true, null);
 	}
-	
+
 	@Test(expected = MyRuntimeException.class)
 	public void testDuplicateMPackage() {
 		MPackage testpkg = mroot.createMPackage("main01.sub01");
@@ -145,7 +145,7 @@ public class TestMRootTest {
 		try {
 			MClass testCls = testpkg.createMClass("MClass01");
 			testCls.setName("MClass02");
-			Assert.assertEquals( "New name of the class", "main02.sub02", testpkg.getName()); 
+			Assert.assertEquals( "New name of the class", "MClass02", testCls.getName());
 			List<MClass> clsList = testpkg.listMClasses();
 			Assert.assertArrayEquals( "Only one class", new MClass[]{testCls}, clsList.toArray());
 		} finally {
