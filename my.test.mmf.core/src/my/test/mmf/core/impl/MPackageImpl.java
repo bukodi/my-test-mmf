@@ -61,7 +61,9 @@ public class MPackageImpl implements MPackage {
 	@Override
 	public void remove() {
 		try {
-			jdtPackageInfo.delete(true, MyMonitor.currentMonitor());
+			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
+					.getParent();
+			jdtPackage.delete(true, MyMonitor.currentMonitor());
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);
 		}
@@ -101,7 +103,7 @@ public class MPackageImpl implements MPackage {
 			ICompilationUnit cu = jdtPackage.createCompilationUnit(
 					name + ".java", content, true, null);
 			workingCopy = cu.getWorkingCopy(monitor);
-			workingCopy.createPackageDeclaration(name, null);
+			workingCopy.createPackageDeclaration(jdtPackage.getElementName(), monitor);
 
 			String source = ((IOpenable) workingCopy).getBuffer().getContents();
 

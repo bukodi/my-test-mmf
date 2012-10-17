@@ -108,11 +108,64 @@ public class TestMRootTest {
 		MPackage testpkg = mroot.createMPackage("main01.sub01");
 		try {
 			testpkg.setName("main02.sub02");
-			Assert.assertEquals( "New name of the package ", "main02.sub02", testpkg.getName());
+			Assert.assertEquals( "New name of the package", "main02.sub02", testpkg.getName());
 			List<MPackage> pkgList = mroot.listMPackages();
 			Assert.assertArrayEquals( "Only one package", new MPackage[]{testpkg}, pkgList.toArray());
 		} finally {
 			testpkg.remove();
+		}
+	}
+
+	@Test(expected = MyRuntimeException.class)
+	public void testDuplicateMClass() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			testpkg.createMClass("MClass01");
+			testpkg.createMClass("MClass01");
+		} finally {
+			testpkg.remove();
+		}
+	}
+
+	@Test
+	public void testListMClasses() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass testCls = testpkg.createMClass("MClass01");
+			List<MClass> clsList = testpkg.listMClasses();
+			Assert.assertArrayEquals( "Only one class", new MClass[]{testCls}, clsList.toArray());
+		} finally {
+			testpkg.remove();
+		}
+	}
+
+	@Test
+	public void testRenameMClass() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass testCls = testpkg.createMClass("MClass01");
+			testCls.setName("MClass02");
+			Assert.assertEquals( "New name of the class", "main02.sub02", testpkg.getName()); 
+			List<MClass> clsList = testpkg.listMClasses();
+			Assert.assertArrayEquals( "Only one class", new MClass[]{testCls}, clsList.toArray());
+		} finally {
+			testpkg.remove();
+		}
+	}
+
+	@Test
+	public void testMoveMClass() {
+		MPackage testpkg1 = mroot.createMPackage("main01.sub01");
+		MPackage testpkg2 = mroot.createMPackage("main02.sub02");
+		try {
+			MClass testCls = testpkg1.createMClass("MClass01");
+			testCls.setMPackage(testpkg2);
+			Assert.assertEquals( "New package of the class", testpkg2, testCls.getMPackage());
+			Assert.assertTrue( "First package is empty", testpkg1.listMClasses().isEmpty());
+			List<MClass> clsList2 = testpkg2.listMClasses();
+			Assert.assertArrayEquals( "Only one class in second package", new MClass[]{testCls}, clsList2.toArray());
+		} finally {
+			testpkg1.remove();
 		}
 	}
 }
