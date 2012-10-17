@@ -5,6 +5,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 
 import my.test.mmf.core.MClass;
 import my.test.mmf.core.MPackage;
+import my.test.mmf.core.MRoot;
 
 public class MClassImpl implements MClass {
 	
@@ -24,8 +25,8 @@ public class MClassImpl implements MClass {
 	}
 
 	@Override
-	public MPackage getMPackage() {
-		return new MPackageImpl( (IPackageFragment) jdtCu.getParent() );
+	public MPackage getMPackage() {		
+		return new MPackageImpl( ((IPackageFragment) jdtCu.getParent()).getCompilationUnit(MRootImpl.PACKAGE_INFO_CLASS + ".java") );
 	}
 
 	@Override

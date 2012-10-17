@@ -2,22 +2,35 @@ package my.test.mmf.core.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import my.test.mmf.core.MPackage;
 import my.test.mmf.core.MRoot;
+import my.test.mmf.core.util.EclipseUtils;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.core.IBuffer;
+import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.ToolFactory;
+import org.eclipse.jdt.core.formatter.CodeFormatter;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.text.edits.TextEdit;
 
 public class MRootImpl implements MRoot {
-	
-	private final IPackageFragmentRoot jdtSourceRoot; 
 
-	public MRootImpl( IPackageFragmentRoot jdtSourceRoot ) {
+	final static String PACKAGE_INFO_CLASS = "_PackageInfo_";
+
+	private final IPackageFragmentRoot jdtSourceRoot;
+
+	public MRootImpl(IPackageFragmentRoot jdtSourceRoot) {
 		this.jdtSourceRoot = jdtSourceRoot;
 	}
 
@@ -25,28 +38,79 @@ public class MRootImpl implements MRoot {
 	public List<MPackage> listMPackages() {
 		List<MPackage> topLevelPackages = new ArrayList<MPackage>();
 		try {
-			for( IJavaElement child : jdtSourceRoot.getChildren() ) {
-				if( ! (child instanceof IPackageFragment ))
+			for (IJavaElement child : jdtSourceRoot.getChildren()) {
+				if (!(child instanceof IPackageFragment))
 					continue;
+				IPackageFragment jdtPkg = (IPackageFragment) child;
 				String name = child.getElementName();
-				if( name == null || name.length() == 0 )
+				if (name == null || name.length() == 0)
 					continue; // Skip the default package
-				topLevelPackages.add(new MPackageImpl((IPackageFragment) child));
+				ICompilationUnit jdtPackageInfo = jdtPkg
+						.getCompilationUnit(PACKAGE_INFO_CLASS + ".java");
+				if (!jdtPackageInfo.exists())
+					continue;
+				topLevelPackages.add(new MPackageImpl(jdtPackageInfo));
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);
 		}
-		
+
 		return topLevelPackages;
 	}
 
 	@Override
 	public MPackage createMPackage(String name) {
+		ICompilationUnit workingCopy = null;
 		try {
-			IPackageFragment jdNewPkg = jdtSourceRoot.createPackageFragment(name, true, MyMonitor.currentMonitor());
-			return new MPackageImpl(jdNewPkg);
+			IPackageFragment pkgTest = jdtSourceRoot.getPackageFragment(name);
+			if (pkgTest != null && pkgTest.exists()) {
+				if (pkgTest.getCompilationUnit(PACKAGE_INFO_CLASS + ".java")
+						.exists())
+					throw new MyRuntimeException("Package with name '" + name
+							+ "' already exists.");
+			}
+			IProgressMonitor monitor = MyMonitor.currentMonitor();
+			IPackageFragment jdtPackage = jdtSourceRoot.createPackageFragment(
+					name, true, MyMonitor.currentMonitor());
+
+			String content = "public class " + PACKAGE_INFO_CLASS + " {}";
+			ICompilationUnit cu = jdtPackage.createCompilationUnit(
+					PACKAGE_INFO_CLASS + ".java", content, true, null);
+			workingCopy = cu.getWorkingCopy(monitor);
+			workingCopy.createPackageDeclaration(name, null);
+
+			String source = ((IOpenable) workingCopy).getBuffer().getContents();
+
+			Map options = EclipseUtils.getJdtCorePreferences(jdtPackage);
+
+			// instantiate the default code formatter with the given options
+			final CodeFormatter codeFormatter = ToolFactory
+					.createCodeFormatter(options, ToolFactory.M_FORMAT_NEW);
+
+			TextEdit edit = codeFormatter.format(
+					CodeFormatter.K_COMPILATION_UNIT, source, 0,
+					source.length(), 0, null);
+
+			if (edit == null) {
+				throw new MyRuntimeException("Can't format the source: "
+						+ source);
+			}
+
+			workingCopy.applyTextEdit(edit, monitor);
+			workingCopy.commitWorkingCopy(false, monitor);
+
+			return new MPackageImpl(
+					jdtPackage.getCompilationUnit(PACKAGE_INFO_CLASS + ".java"));
 		} catch (JavaModelException e) {
-			throw new MyRuntimeException(e);
+			throw new MyRuntimeException("Can not create '" + name
+					+ "' package.", e);
+		} finally {
+			if (workingCopy != null)
+				try {
+					workingCopy.discardWorkingCopy();
+				} catch (JavaModelException e) {
+					throw new MyRuntimeException(e);
+				}
 		}
 	}
 }
