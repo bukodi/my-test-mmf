@@ -1,33 +1,25 @@
-package my.test.mmf.core.impl;
+package my.test.mmf.core.impl.jre;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import my.test.mmf.core.MClass;
 import my.test.mmf.core.MPackage;
-import my.test.mmf.core.MRoot;
-import my.test.mmf.core.util.EclipseUtils;
+import my.test.mmf.core.MLibrary;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.ToolFactory;
-import org.eclipse.jdt.core.formatter.CodeFormatter;
-import org.eclipse.text.edits.TextEdit;
 
-public class MPackageImpl implements MPackage {
+public class MPackageJDT implements MPackage {
 
 	private ICompilationUnit jdtPackageInfo;
 
-	protected MPackageImpl(ICompilationUnit jdtPackageInfo) {
+	protected MPackageJDT(ICompilationUnit jdtPackageInfo) {
 		this.jdtPackageInfo = jdtPackageInfo;
 	}
 
@@ -46,15 +38,15 @@ public class MPackageImpl implements MPackage {
 			jdtPkg.rename(name, false, MyMonitor.currentMonitor());
 			jdtPkg = srcRoot.getPackageFragment(name);
 			jdtPackageInfo = jdtPkg
-					.getCompilationUnit(MRootImpl.PACKAGE_INFO_CLASS + ".java");
+					.getCompilationUnit(MLibraryJDT.PACKAGE_INFO_CLASS + ".java");
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Rename " + this + " to " + name, e);
 		}
 	}
 
 	@Override
-	public MRoot getRoot() {
-		return new MRootImpl((IPackageFragmentRoot) jdtPackageInfo.getParent());
+	public MLibrary getMLibrary() {
+		return new MLibraryJDT((IPackageFragmentRoot) jdtPackageInfo.getParent());
 	}
 
 	@Override
@@ -75,9 +67,9 @@ public class MPackageImpl implements MPackage {
 			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
 					.getParent();
 			for (ICompilationUnit cu : jdtPackage.getCompilationUnits()) {
-				if( (MRootImpl.PACKAGE_INFO_CLASS + ".java").equals( cu.getElementName()) )
+				if( (MLibraryJDT.PACKAGE_INFO_CLASS + ".java").equals( cu.getElementName()) )
 					continue;
-				mclassList.add(new MClassImpl(cu));
+				mclassList.add(new MClassJDT(cu));
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);
@@ -87,7 +79,7 @@ public class MPackageImpl implements MPackage {
 
 	@Override
 	public MClass createMClass(String name) {
-		return new MClassImpl(jdtPackageInfo, name);
+		return new MClassJDT(jdtPackageInfo, name);
 	}
 
 	@Override
@@ -111,7 +103,7 @@ public class MPackageImpl implements MPackage {
 			return true;
 		if (obj == null)
 			return false;
-		MPackageImpl other = (MPackageImpl) obj;
+		MPackageJDT other = (MPackageJDT) obj;
 		if (jdtPackageInfo == null) {
 			if (other.jdtPackageInfo != null)
 				return false;

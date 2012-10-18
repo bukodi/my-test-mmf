@@ -1,4 +1,4 @@
-package my.test.mmf.core.impl;
+package my.test.mmf.core.impl.jdt;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,15 +25,15 @@ import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.text.edits.TextEdit;
 
-public class MClassImpl implements MClass {
+public class MClassJDT implements MClass {
 
 	private ICompilationUnit jdtCu;
 
-	public MClassImpl( ICompilationUnit jdtCu ) {
+	public MClassJDT( ICompilationUnit jdtCu ) {
 		this.jdtCu = jdtCu;
 	}
 
-	public MClassImpl( ICompilationUnit jdtPackageInfo, String name ) {
+	public MClassJDT( ICompilationUnit jdtPackageInfo, String name ) {
 		String fullname = "???."+ name;
 		ICompilationUnit workingCopy = null;
 		try {
@@ -53,7 +53,7 @@ public class MClassImpl implements MClass {
 
 			String source = ((IOpenable) workingCopy).getBuffer().getContents();
 
-			Map options = EclipseUtils.getJdtCorePreferences(jdtPackage);
+			Map<?, ?> options = EclipseUtils.getJdtCorePreferences(jdtPackage);
 
 			// instantiate the default code formatter with the given options
 			final CodeFormatter codeFormatter = ToolFactory
@@ -105,7 +105,7 @@ public class MClassImpl implements MClass {
 
 	@Override
 	public MPackage getMPackage() {
-		return new MPackageImpl( ((IPackageFragment) jdtCu.getParent()).getCompilationUnit(MRootImpl.PACKAGE_INFO_CLASS + ".java") );
+		return new MPackageJDT( ((IPackageFragment) jdtCu.getParent()).getCompilationUnit(MLibraryJDT.PACKAGE_INFO_CLASS + ".java") );
 	}
 
 	@Override
@@ -123,7 +123,7 @@ public class MClassImpl implements MClass {
 
 	@Override
 	public MAttr createMAttribute(String name) {
-		return new MAttrImpl(jdtCu, name);
+		return new MAttrJDT(jdtCu, name);
 	}
 
 	@Override
@@ -134,7 +134,7 @@ public class MClassImpl implements MClass {
 			for (IField jdtField : jdtType.getFields()) {
 				if( ! Flags.isStatic( jdtField.getFlags() )  )
 					continue;
-				mattrList.add(new MAttrImpl(jdtField));
+				mattrList.add(new MAttrJDT(jdtField));
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);
@@ -171,7 +171,7 @@ public class MClassImpl implements MClass {
 			return true;
 		if (obj == null)
 			return false;
-		MClassImpl other = (MClassImpl) obj;
+		MClassJDT other = (MClassJDT) obj;
 		if (jdtCu == null) {
 			if (other.jdtCu != null)
 				return false;

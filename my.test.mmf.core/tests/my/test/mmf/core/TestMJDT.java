@@ -3,7 +3,7 @@ package my.test.mmf.core;
 import java.util.ArrayList;
 import java.util.List;
 
-import my.test.mmf.core.impl.MRootImpl;
+import my.test.mmf.core.impl.jdt.MLibraryJDT;
 import my.test.mmf.core.util.EclipseUtils;
 import my.test.mmf.core.util.MyRuntimeException;
 
@@ -25,11 +25,11 @@ import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-public class TestMRootTest {
+public class TestMJDT {
 
 	final static String PROJECT_NAME = "TestMMF01";
 
-	static MRoot mroot;
+	static MLibrary mlib;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -74,7 +74,7 @@ public class TestMRootTest {
 		javaProject.setRawClasspath(
 				entries.toArray(new IClasspathEntry[entries.size()]), null);
 
-		mroot = new MRootImpl(srcRoot);
+		mlib = new MLibraryJDT(srcRoot);
 	}
 
 	@AfterClass
@@ -84,9 +84,9 @@ public class TestMRootTest {
 
 	@Test(expected = MyRuntimeException.class)
 	public void testDuplicateMPackage() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			mroot.createMPackage("main01.sub01");
+			mlib.createMPackage("main01.sub01");
 		} finally {
 			testpkg.delete();
 		}
@@ -94,9 +94,9 @@ public class TestMRootTest {
 
 	@Test
 	public void testListMPackages() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			List<MPackage> pkgList = mroot.listMPackages();
+			List<MPackage> pkgList = mlib.listMPackages();
 			Assert.assertArrayEquals( "Only one package", new MPackage[]{testpkg}, pkgList.toArray());
 		} finally {
 			testpkg.delete();
@@ -105,11 +105,11 @@ public class TestMRootTest {
 
 	@Test
 	public void testRenameMPackage() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			testpkg.setName("main02.sub02");
 			Assert.assertEquals( "New name of the package", "main02.sub02", testpkg.getName());
-			List<MPackage> pkgList = mroot.listMPackages();
+			List<MPackage> pkgList = mlib.listMPackages();
 			Assert.assertArrayEquals( "Only one package", new MPackage[]{testpkg}, pkgList.toArray());
 		} finally {
 			testpkg.delete();
@@ -118,7 +118,7 @@ public class TestMRootTest {
 
 	@Test(expected = MyRuntimeException.class)
 	public void testDuplicateMClass() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			testpkg.createMClass("MClass01");
 			testpkg.createMClass("MClass01");
@@ -129,7 +129,7 @@ public class TestMRootTest {
 
 	@Test
 	public void testListMClasses() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass testCls = testpkg.createMClass("MClass01");
 			List<MClass> clsList = testpkg.listMClasses();
@@ -141,7 +141,7 @@ public class TestMRootTest {
 
 	@Test
 	public void testRenameMClass() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass testCls = testpkg.createMClass("MClass01");
 			testCls.setName("MClass02");
@@ -155,8 +155,8 @@ public class TestMRootTest {
 
 	@Test
 	public void testMoveMClass() {
-		MPackage testpkg1 = mroot.createMPackage("main01.sub01");
-		MPackage testpkg2 = mroot.createMPackage("main02.sub02");
+		MPackage testpkg1 = mlib.createMPackage("main01.sub01");
+		MPackage testpkg2 = mlib.createMPackage("main02.sub02");
 		try {
 			MClass testCls = testpkg1.createMClass("MClass01");
 			testCls.setMPackage(testpkg2);
@@ -171,7 +171,7 @@ public class TestMRootTest {
 
 	@Test
 	public void testDeleteMClass() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass testCls = testpkg.createMClass("MClass01");
 			testCls.delete();
@@ -183,7 +183,7 @@ public class TestMRootTest {
 
 	@Test(expected = MyRuntimeException.class)
 	public void testDuplicateMAttr() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass cls = testpkg.createMClass("MClass01");
 			cls.createMAttribute("attr01");
@@ -195,7 +195,7 @@ public class TestMRootTest {
 
 	@Test
 	public void testListMAttrs() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass cls = testpkg.createMClass("MClass01");
 			MAttr attr = cls.createMAttribute("attr01");
@@ -208,7 +208,7 @@ public class TestMRootTest {
 
 	@Test
 	public void testRenameMAttr() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass cls = testpkg.createMClass("MClass01");
 			MAttr attr = cls.createMAttribute("attr01");
@@ -223,7 +223,7 @@ public class TestMRootTest {
 
 	@Test
 	public void testMoveMAttr() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass cls1 = testpkg.createMClass("MClass01");
 			MClass cls2 = testpkg.createMClass("MClass02");
@@ -240,7 +240,7 @@ public class TestMRootTest {
 
 	@Test
 	public void testDeleteMAttr() {
-		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		MPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			MClass cls = testpkg.createMClass("MClass01");
 			MAttr attr = cls.createMAttribute("attr01");

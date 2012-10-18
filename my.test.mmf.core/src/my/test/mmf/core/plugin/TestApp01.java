@@ -4,8 +4,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 
 import my.test.mmf.core.MPackage;
-import my.test.mmf.core.MRoot;
-import my.test.mmf.core.impl.MRootImpl;
+import my.test.mmf.core.MLibrary;
+import my.test.mmf.core.impl.jdt.MLibraryJDT;
 import my.test.mmf.core.util.EclipseUtils;
 
 import org.eclipse.core.resources.IResource;
@@ -36,7 +36,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 	public void stop() {
 	}
 
-	static MRoot mroot;
+	static MLibrary mroot;
 	
 	@Override
 	public void run(IProgressMonitor monitor) throws CoreException {
@@ -51,7 +51,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 
 			IPackageFragmentRoot jdtSourceRoot = EclipseUtils
 					.getSrcRoot("/TestMMF01/src_model");
-			mroot = new MRootImpl(jdtSourceRoot);
+			mroot = new MLibraryJDT(jdtSourceRoot);
 		}
 		
 		try{

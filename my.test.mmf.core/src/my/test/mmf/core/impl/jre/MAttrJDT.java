@@ -1,4 +1,4 @@
-package my.test.mmf.core.impl;
+package my.test.mmf.core.impl.jre;
 
 import my.test.mmf.core.MAttr;
 import my.test.mmf.core.MClass;
@@ -9,20 +9,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
-import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.IWorkingCopy;
 import org.eclipse.jdt.core.JavaModelException;
 
-public class MAttrImpl implements MAttr {
+public class MAttrJDT implements MAttr {
 
 	private IField jdtField;
 
-	public MAttrImpl(IField jdtField) {
+	public MAttrJDT(IField jdtField) {
 		this.jdtField = jdtField;
 	}
 
-	public MAttrImpl(ICompilationUnit jdtParent, String name) {
+	public MAttrJDT(ICompilationUnit jdtParent, String name) {
 		ICompilationUnit workingCopy = null;
 		try {
 			if (jdtParent.findPrimaryType().getField(name).exists())
@@ -60,7 +58,7 @@ public class MAttrImpl implements MAttr {
 
 	@Override
 	public MClass getMClass() {
-		return new MClassImpl(jdtField.getCompilationUnit());
+		return new MClassJDT(jdtField.getCompilationUnit());
 	}
 
 	@Override
@@ -96,7 +94,7 @@ public class MAttrImpl implements MAttr {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		MAttrImpl other = (MAttrImpl) obj;
+		MAttrJDT other = (MAttrJDT) obj;
 		if (jdtField == null) {
 			if (other.jdtField != null)
 				return false;

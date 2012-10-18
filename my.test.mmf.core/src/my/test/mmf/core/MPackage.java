@@ -8,7 +8,7 @@ public interface MPackage  {
 
 	void setName(String name);
 
-	MRoot getRoot();
+	MLibrary getMLibrary();
 
 	void delete(); 
 

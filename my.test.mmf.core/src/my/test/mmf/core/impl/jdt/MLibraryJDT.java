@@ -1,17 +1,16 @@
-package my.test.mmf.core.impl;
+package my.test.mmf.core.impl.jdt;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import my.test.mmf.core.MPackage;
-import my.test.mmf.core.MRoot;
+import my.test.mmf.core.MLibrary;
 import my.test.mmf.core.util.EclipseUtils;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.core.IBuffer;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IOpenable;
@@ -20,17 +19,15 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
-import org.eclipse.jface.text.Document;
-import org.eclipse.jface.text.IDocument;
 import org.eclipse.text.edits.TextEdit;
 
-public class MRootImpl implements MRoot {
+public class MLibraryJDT implements MLibrary {
 
 	final static String PACKAGE_INFO_CLASS = "_PackageInfo_";
 
 	private final IPackageFragmentRoot jdtSourceRoot;
 
-	public MRootImpl(IPackageFragmentRoot jdtSourceRoot) {
+	public MLibraryJDT(IPackageFragmentRoot jdtSourceRoot) {
 		this.jdtSourceRoot = jdtSourceRoot;
 	}
 
@@ -49,7 +46,7 @@ public class MRootImpl implements MRoot {
 						.getCompilationUnit(PACKAGE_INFO_CLASS + ".java");
 				if (!jdtPackageInfo.exists())
 					continue;
-				topLevelPackages.add(new MPackageImpl(jdtPackageInfo));
+				topLevelPackages.add(new MPackageJDT(jdtPackageInfo));
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);
@@ -81,7 +78,7 @@ public class MRootImpl implements MRoot {
 
 			String source = ((IOpenable) workingCopy).getBuffer().getContents();
 
-			Map options = EclipseUtils.getJdtCorePreferences(jdtPackage);
+			Map<?, ?> options = EclipseUtils.getJdtCorePreferences(jdtPackage);
 
 			// instantiate the default code formatter with the given options
 			final CodeFormatter codeFormatter = ToolFactory
@@ -99,7 +96,7 @@ public class MRootImpl implements MRoot {
 			workingCopy.applyTextEdit(edit, monitor);
 			workingCopy.commitWorkingCopy(false, monitor);
 
-			return new MPackageImpl(
+			return new MPackageJDT(
 					jdtPackage.getCompilationUnit(PACKAGE_INFO_CLASS + ".java"));
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Can not create '" + name

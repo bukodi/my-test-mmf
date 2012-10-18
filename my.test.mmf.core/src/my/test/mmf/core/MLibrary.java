@@ -2,7 +2,7 @@ package my.test.mmf.core;
 
 import java.util.List;
 
-public interface MRoot {
+public interface MLibrary {
 	
 	List<MPackage> listMPackages();
 	
