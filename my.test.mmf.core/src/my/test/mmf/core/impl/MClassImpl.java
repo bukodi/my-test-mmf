@@ -1,16 +1,29 @@
 package my.test.mmf.core.impl;
 
-import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IPackageFragment;
-import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.JavaModelException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
+import my.test.mmf.core.MAttr;
 import my.test.mmf.core.MClass;
 import my.test.mmf.core.MPackage;
-import my.test.mmf.core.MRoot;
+import my.test.mmf.core.util.EclipseUtils;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
+
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jdt.core.Flags;
+import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IField;
+import org.eclipse.jdt.core.IOpenable;
+import org.eclipse.jdt.core.IPackageFragment;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.ToolFactory;
+import org.eclipse.jdt.core.formatter.CodeFormatter;
+import org.eclipse.text.edits.TextEdit;
 
 public class MClassImpl implements MClass {
 
@@ -18,6 +31,58 @@ public class MClassImpl implements MClass {
 
 	public MClassImpl( ICompilationUnit jdtCu ) {
 		this.jdtCu = jdtCu;
+	}
+
+	public MClassImpl( ICompilationUnit jdtPackageInfo, String name ) {
+		String fullname = "???."+ name;
+		ICompilationUnit workingCopy = null;
+		try {
+			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
+					.getParent();
+			fullname = jdtPackage.getElementName() +"."+ name;
+			if (jdtPackage.getCompilationUnit(name + ".java").exists())
+				throw new MyRuntimeException("Class with name '" + fullname
+						+ "' already exists.");
+			IProgressMonitor monitor = MyMonitor.currentMonitor();
+
+			String content = "public class " + name + " {}";
+			ICompilationUnit cu = jdtPackage.createCompilationUnit(
+					name + ".java", content, true, null);
+			workingCopy = cu.getWorkingCopy(monitor);
+			workingCopy.createPackageDeclaration(jdtPackage.getElementName(), monitor);
+
+			String source = ((IOpenable) workingCopy).getBuffer().getContents();
+
+			Map options = EclipseUtils.getJdtCorePreferences(jdtPackage);
+
+			// instantiate the default code formatter with the given options
+			final CodeFormatter codeFormatter = ToolFactory
+					.createCodeFormatter(options, ToolFactory.M_FORMAT_NEW);
+
+			TextEdit edit = codeFormatter.format(
+					CodeFormatter.K_COMPILATION_UNIT, source, 0,
+					source.length(), 0, null);
+
+			if (edit == null) {
+				throw new MyRuntimeException("Can't format the source: " + source);
+			}
+
+			workingCopy.applyTextEdit(edit, monitor);
+			workingCopy.commitWorkingCopy(false, monitor);
+			workingCopy.discardWorkingCopy();
+
+			jdtCu = jdtPackage.getCompilationUnit(name + ".java");
+		} catch (JavaModelException e) {
+			throw new MyRuntimeException(
+					"Can not create '" + fullname + "' class.", e);
+		} finally {
+			if (workingCopy != null)
+				try {
+					workingCopy.discardWorkingCopy();
+				} catch (JavaModelException e) {
+					throw new MyRuntimeException(e);
+				}
+		}
 	}
 
 	@Override
@@ -57,7 +122,33 @@ public class MClassImpl implements MClass {
 	}
 
 	@Override
-	public void remove() {
+	public MAttr createMAttribute(String name) {
+		return new MAttrImpl(jdtCu, name);
+	}
+
+	@Override
+	public List<MAttr> listMAttributes() {
+		List<MAttr> mattrList = new ArrayList<MAttr>();
+		try {
+			IType jdtType = jdtCu.findPrimaryType();
+			for (IField jdtField : jdtType.getFields()) {
+				if( ! Flags.isStatic( jdtField.getFlags() )  )
+					continue;
+				mattrList.add(new MAttrImpl(jdtField));
+			}
+		} catch (JavaModelException e) {
+			throw new MyRuntimeException(e);
+		}
+		return mattrList;
+	}
+
+	@Override
+	public void delete() {
+		try {
+			jdtCu.delete(false, MyMonitor.currentMonitor());
+		} catch (JavaModelException e) {
+			throw new MyRuntimeException(e);
+		}
 	}
 
 	@Override
@@ -88,6 +179,4 @@ public class MClassImpl implements MClass {
 			return false;
 		return true;
 	}
-
-
 }

@@ -8,6 +8,7 @@ public interface MAttr {
 
 	MClass getMClass();
 
-	void remove(); 
+	void setMClass(MClass ownerMClass);
 
+	void delete();
 }

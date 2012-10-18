@@ -58,7 +58,7 @@ public class MPackageImpl implements MPackage {
 	}
 
 	@Override
-	public void remove() {
+	public void delete() {
 		try {
 			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
 					.getParent();
@@ -87,55 +87,7 @@ public class MPackageImpl implements MPackage {
 
 	@Override
 	public MClass createMClass(String name) {
-		String fullname = "???."+ name;
-		ICompilationUnit workingCopy = null;
-		try {
-			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
-					.getParent();
-			fullname = jdtPackage.getElementName() +"."+ name;
-			if (jdtPackage.getCompilationUnit(name + ".java").exists())
-				throw new MyRuntimeException("Class with name '" + fullname
-						+ "' already exists.");
-			IProgressMonitor monitor = MyMonitor.currentMonitor();
-
-			String content = "public class " + name + " {}";
-			ICompilationUnit cu = jdtPackage.createCompilationUnit(
-					name + ".java", content, true, null);
-			workingCopy = cu.getWorkingCopy(monitor);
-			workingCopy.createPackageDeclaration(jdtPackage.getElementName(), monitor);
-
-			String source = ((IOpenable) workingCopy).getBuffer().getContents();
-
-			Map options = EclipseUtils.getJdtCorePreferences(jdtPackage);
-
-			// instantiate the default code formatter with the given options
-			final CodeFormatter codeFormatter = ToolFactory
-					.createCodeFormatter(options, ToolFactory.M_FORMAT_NEW);
-
-			TextEdit edit = codeFormatter.format(
-					CodeFormatter.K_COMPILATION_UNIT, source, 0,
-					source.length(), 0, null);
-
-			if (edit == null) {
-				throw new MyRuntimeException("Can't format the source: " + source);
-			}
-
-			workingCopy.applyTextEdit(edit, monitor);
-			workingCopy.commitWorkingCopy(false, monitor);
-			workingCopy.discardWorkingCopy();
-
-			return new MClassImpl(jdtPackage.getCompilationUnit(name + ".java"));
-		} catch (JavaModelException e) {
-			throw new MyRuntimeException(
-					"Can not create '" + fullname + "' class.", e);
-		} finally {
-			if (workingCopy != null)
-				try {
-					workingCopy.discardWorkingCopy();
-				} catch (JavaModelException e) {
-					throw new MyRuntimeException(e);
-				}
-		}
+		return new MClassImpl(jdtPackageInfo, name);
 	}
 
 	@Override

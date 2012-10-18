@@ -10,7 +10,7 @@ public interface MPackage  {
 
 	MRoot getRoot();
 
-	void remove(); 
+	void delete(); 
 
 	List<MClass> listMClasses(); 
 

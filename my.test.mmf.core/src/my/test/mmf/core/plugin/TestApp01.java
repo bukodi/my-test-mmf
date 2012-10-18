@@ -81,7 +81,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 		System.out.println(testpkg.getName());
 		testpkg.setName("main01.sub02");
 		System.out.println(testpkg.getName());
-		testpkg.remove();
+		testpkg.delete();
 		ResourcesPlugin.getWorkspace().save(true, null);
 
 	}
@@ -101,7 +101,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 		public void run(IProgressMonitor monitor) throws CoreException {
 			MPackage testpkg = mroot.createMPackage("wstrx.sub03");
 			//testpkg = mroot.createPackage("wstrx/sub02");
-			throw new JavaModelException(new Throwable("Izé"), IJavaModelStatus.ERROR);
+			throw new JavaModelException(new Throwable("Izï¿½"), IJavaModelStatus.ERROR);
 		}
 		
 	};

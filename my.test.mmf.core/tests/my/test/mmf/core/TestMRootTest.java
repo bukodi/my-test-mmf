@@ -88,7 +88,7 @@ public class TestMRootTest {
 		try {
 			mroot.createMPackage("main01.sub01");
 		} finally {
-			testpkg.remove();
+			testpkg.delete();
 		}
 	}
 
@@ -99,7 +99,7 @@ public class TestMRootTest {
 			List<MPackage> pkgList = mroot.listMPackages();
 			Assert.assertArrayEquals( "Only one package", new MPackage[]{testpkg}, pkgList.toArray());
 		} finally {
-			testpkg.remove();
+			testpkg.delete();
 		}
 	}
 
@@ -112,7 +112,7 @@ public class TestMRootTest {
 			List<MPackage> pkgList = mroot.listMPackages();
 			Assert.assertArrayEquals( "Only one package", new MPackage[]{testpkg}, pkgList.toArray());
 		} finally {
-			testpkg.remove();
+			testpkg.delete();
 		}
 	}
 
@@ -123,7 +123,7 @@ public class TestMRootTest {
 			testpkg.createMClass("MClass01");
 			testpkg.createMClass("MClass01");
 		} finally {
-			testpkg.remove();
+			testpkg.delete();
 		}
 	}
 
@@ -135,7 +135,7 @@ public class TestMRootTest {
 			List<MClass> clsList = testpkg.listMClasses();
 			Assert.assertArrayEquals( "Only one class", new MClass[]{testCls}, clsList.toArray());
 		} finally {
-			testpkg.remove();
+			testpkg.delete();
 		}
 	}
 
@@ -149,7 +149,7 @@ public class TestMRootTest {
 			List<MClass> clsList = testpkg.listMClasses();
 			Assert.assertArrayEquals( "Only one class", new MClass[]{testCls}, clsList.toArray());
 		} finally {
-			testpkg.remove();
+			testpkg.delete();
 		}
 	}
 
@@ -165,7 +165,90 @@ public class TestMRootTest {
 			List<MClass> clsList2 = testpkg2.listMClasses();
 			Assert.assertArrayEquals( "Only one class in second package", new MClass[]{testCls}, clsList2.toArray());
 		} finally {
-			testpkg1.remove();
+			testpkg1.delete();
 		}
 	}
+
+	@Test
+	public void testDeleteMClass() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass testCls = testpkg.createMClass("MClass01");
+			testCls.delete();
+			Assert.assertTrue( "Package is empty", testpkg.listMClasses().isEmpty());
+		} finally {
+			testpkg.delete();
+		}
+	}
+
+	@Test(expected = MyRuntimeException.class)
+	public void testDuplicateMAttr() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass cls = testpkg.createMClass("MClass01");
+			cls.createMAttribute("attr01");
+			cls.createMAttribute("attr01");
+		} finally {
+			testpkg.delete();
+		}
+	}
+
+	@Test
+	public void testListMAttrs() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass cls = testpkg.createMClass("MClass01");
+			MAttr attr = cls.createMAttribute("attr01");
+			List<MAttr> attrList = cls.listMAttributes();
+			Assert.assertArrayEquals( "Only one attribute", new MAttr[]{attr}, attrList.toArray());
+		} finally {
+			testpkg.delete();
+		}
+	}
+
+	@Test
+	public void testRenameMAttr() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass cls = testpkg.createMClass("MClass01");
+			MAttr attr = cls.createMAttribute("attr01");
+			attr.setName("attr02");
+			Assert.assertEquals( "New name of the attr", "attr02", attr.getName());
+			List<MAttr> attrList = cls.listMAttributes();
+			Assert.assertArrayEquals( "Only one attribute", new MAttr[]{attr}, attrList.toArray());
+		} finally {
+			testpkg.delete();
+		}
+	}
+
+	@Test
+	public void testMoveMAttr() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass cls1 = testpkg.createMClass("MClass01");
+			MClass cls2 = testpkg.createMClass("MClass02");
+			MAttr attr = cls1.createMAttribute("attr01");
+			attr.setMClass(cls2);
+			Assert.assertEquals( "New owner class of the attribute", cls2, attr.getMClass());
+			Assert.assertTrue( "First package is empty", testpkg.listMClasses().isEmpty());
+			List<MAttr> attrList = cls2.listMAttributes();
+			Assert.assertArrayEquals( "Only one attribute", new MAttr[]{attr}, attrList.toArray());
+		} finally {
+			testpkg.delete();
+		}
+	}
+
+	@Test
+	public void testDeleteMAttr() {
+		MPackage testpkg = mroot.createMPackage("main01.sub01");
+		try {
+			MClass cls = testpkg.createMClass("MClass01");
+			MAttr attr = cls.createMAttribute("attr01");
+			attr.delete();
+			Assert.assertTrue( "Class has no attribute", cls.listMAttributes().isEmpty());
+		} finally {
+			testpkg.delete();
+		}
+	}
+
 }
