@@ -3,6 +3,7 @@ package my.test.mmf.core.impl.jdt;
 import java.util.ArrayList;
 import java.util.List;
 
+import my.test.mmf.core.MClass;
 import my.test.mmf.core.ModifiableMClass;
 import my.test.mmf.core.ModifiableMPackage;
 import my.test.mmf.core.ModifiableMLibrary;
@@ -58,6 +59,15 @@ public class MPackageJDT implements ModifiableMPackage {
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);
 		}
+	}
+
+	@Override
+	@Nullable
+	public MClass getMClass(String name) {
+		IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
+				.getParent();
+		ICompilationUnit cu = jdtPackage.getCompilationUnit(name + ".java");
+		return cu.exists() ? new MClassJDT(cu) : null ;
 	}
 
 	@Override

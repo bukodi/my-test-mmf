@@ -12,6 +12,8 @@ import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IOpenable;
@@ -33,6 +35,25 @@ public class MLibraryJDT implements ModifiableMLibrary {
 	}
 
 	@Override
+	public @Nullable
+	ModifiableMPackage getMPackage(String name) {
+		IPackageFragment jdtPkg = jdtSourceRoot.getPackageFragment(name);
+		return getMPackage(jdtPkg);
+	}
+
+	private @Nullable
+	MPackageJDT getMPackage(IPackageFragment jdtPkg) {
+		String name = jdtPkg.getElementName();
+		if (name == null || name.length() == 0)
+			return null; // Skip the default package
+		ICompilationUnit jdtPackageInfo = jdtPkg
+				.getCompilationUnit(PACKAGE_INFO_CLASS + ".java");
+		if (!jdtPackageInfo.exists())
+			return null;
+		return new MPackageJDT(jdtPackageInfo);
+	}
+
+	@Override
 	public List<? extends ModifiableMPackage> listMPackages() {
 		List<ModifiableMPackage> topLevelPackages = new ArrayList<ModifiableMPackage>();
 		try {
@@ -40,14 +61,9 @@ public class MLibraryJDT implements ModifiableMLibrary {
 				if (!(child instanceof IPackageFragment))
 					continue;
 				IPackageFragment jdtPkg = (IPackageFragment) child;
-				String name = child.getElementName();
-				if (name == null || name.length() == 0)
-					continue; // Skip the default package
-				ICompilationUnit jdtPackageInfo = jdtPkg
-						.getCompilationUnit(PACKAGE_INFO_CLASS + ".java");
-				if (!jdtPackageInfo.exists())
-					continue;
-				topLevelPackages.add(new MPackageJDT(jdtPackageInfo));
+				MPackageJDT mPkg = getMPackage(jdtPkg);
+				if( mPkg != null )
+					topLevelPackages.add(mPkg);
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);

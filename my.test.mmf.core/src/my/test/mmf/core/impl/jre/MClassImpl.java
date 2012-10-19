@@ -9,6 +9,8 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+import org.eclipse.jdt.annotation.Nullable;
+
 import my.test.mmf.core.MAttr;
 import my.test.mmf.core.MClass;
 import my.test.mmf.core.MPackage;
@@ -46,6 +48,13 @@ public class MClassImpl implements MClass {
 	@Override
 	public MPackage getMPackage() {
 		return packageInfo;
+	}
+
+
+	@Override
+	@Nullable
+	public MAttr getMAttribute(String name) {
+		return null;
 	}
 
 	@Override

@@ -2,26 +2,34 @@ package my.test.mmf.core.impl.jre;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import my.test.mmf.core.MClass;
 import my.test.mmf.core.MLibrary;
 import my.test.mmf.core.MPackage;
-import my.test.mmf.core.ModifiableMClass;
 import my.test.mmf.core.ModifiableMPackage;
+
+import org.eclipse.jdt.annotation.Nullable;
 
 public class MPackageImpl implements MPackage {
 
 	private final MLibrary mlibrary;
-	private final List<MClass> mclasses;
+	private final Map<String,MClass> mclassesByName;
+	private final List<MClass> mclassesOrder;
 
 	protected MPackageImpl( Class<?> ... classes  ) {
 		this.mlibrary = null;
-		List<MClass> mclasses = new ArrayList<MClass>();
+		Map<String, MClass> mclassesByName = new HashMap<String, MClass>();
+		List<MClass> mclassesOrder = new ArrayList<MClass>();
 		for( Class<?> clazz : classes ) {
-			mclasses.add( new MClassImpl(this, clazz));
+			MClassImpl mcls = new MClassImpl(this, clazz);
+			mclassesByName.put( mcls.getName(), mcls );
+			mclassesOrder.add( mcls );
 		}
-		this.mclasses = Collections.unmodifiableList(mclasses);
+		this.mclassesByName = Collections.unmodifiableMap(mclassesByName);
+		this.mclassesOrder = Collections.unmodifiableList(mclassesOrder);
 	}
 
 	@Override
@@ -35,8 +43,14 @@ public class MPackageImpl implements MPackage {
 	}
 
 	@Override
+	@Nullable
+	public MClass getMClass(String name) {
+		return mclassesByName.get(name);
+	}
+
+	@Override
 	public List<MClass> listMClasses() {
-		return mclasses;
+		return mclassesOrder;
 	}
 
 	@Override
