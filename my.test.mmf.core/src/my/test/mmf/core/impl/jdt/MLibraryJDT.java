@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import my.test.mmf.core.ModifiableMLibrary;
+import my.test.mmf.core.ModifiableMPackage;
 import my.test.mmf.core.MPackage;
-import my.test.mmf.core.MLibrary;
 import my.test.mmf.core.util.EclipseUtils;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
@@ -21,7 +22,7 @@ import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.text.edits.TextEdit;
 
-public class MLibraryJDT implements MLibrary {
+public class MLibraryJDT implements ModifiableMLibrary {
 
 	final static String PACKAGE_INFO_CLASS = "_PackageInfo_";
 
@@ -32,8 +33,8 @@ public class MLibraryJDT implements MLibrary {
 	}
 
 	@Override
-	public List<MPackage> listMPackages() {
-		List<MPackage> topLevelPackages = new ArrayList<MPackage>();
+	public List<? extends ModifiableMPackage> listMPackages() {
+		List<ModifiableMPackage> topLevelPackages = new ArrayList<ModifiableMPackage>();
 		try {
 			for (IJavaElement child : jdtSourceRoot.getChildren()) {
 				if (!(child instanceof IPackageFragment))
@@ -56,7 +57,7 @@ public class MLibraryJDT implements MLibrary {
 	}
 
 	@Override
-	public MPackage createMPackage(String name) {
+	public ModifiableMPackage createMPackage(String name) {
 		ICompilationUnit workingCopy = null;
 		try {
 			IPackageFragment pkgTest = jdtSourceRoot.getPackageFragment(name);

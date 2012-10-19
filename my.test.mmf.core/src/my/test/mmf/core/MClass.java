@@ -6,15 +6,8 @@ public interface MClass {
 
 	String getName();
 
-	void setName(String name);
-
 	public MPackage getMPackage();
 
-	public void setMPackage( MPackage containerPackage );
+	List<? extends MAttr> listMAttributes();
 
-	public void delete();
-
-	MAttr createMAttribute(String name);
-
-	List<MAttr> listMAttributes();
 }

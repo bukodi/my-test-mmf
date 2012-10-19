@@ -1,7 +1,7 @@
 package my.test.mmf.core.impl.jdt;
 
-import my.test.mmf.core.MAttr;
-import my.test.mmf.core.MClass;
+import my.test.mmf.core.ModifiableMAttr;
+import my.test.mmf.core.ModifiableMClass;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
 
@@ -12,7 +12,7 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 
-public class MAttrJDT implements MAttr {
+public class MAttrJDT implements ModifiableMAttr {
 
 	private IField jdtField;
 
@@ -57,12 +57,12 @@ public class MAttrJDT implements MAttr {
 	}
 
 	@Override
-	public MClass getMClass() {
+	public ModifiableMClass getMClass() {
 		return new MClassJDT(jdtField.getCompilationUnit());
 	}
 
 	@Override
-	public void setMClass(MClass ownerMClass) {
+	public void setMClass(ModifiableMClass ownerMClass) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -73,7 +73,7 @@ public class MAttrJDT implements MAttr {
 
 	@Override
 	public String toString() {
-		return "(" + MAttr.class.getSimpleName() + ")"
+		return "(" + ModifiableMAttr.class.getSimpleName() + ")"
 				+ jdtField.getParent().getElementName() + "#" + jdtField.getElementName();
 	}
 

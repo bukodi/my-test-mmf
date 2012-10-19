@@ -29,7 +29,7 @@ public class TestMJDT {
 
 	final static String PROJECT_NAME = "TestMMF01";
 
-	static MLibrary mlib;
+	static ModifiableMLibrary mlib;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -84,7 +84,7 @@ public class TestMJDT {
 
 	@Test(expected = MyRuntimeException.class)
 	public void testDuplicateMPackage() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			mlib.createMPackage("main01.sub01");
 		} finally {
@@ -94,10 +94,10 @@ public class TestMJDT {
 
 	@Test
 	public void testListMPackages() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			List<MPackage> pkgList = mlib.listMPackages();
-			Assert.assertArrayEquals( "Only one package", new MPackage[]{testpkg}, pkgList.toArray());
+			List<? extends ModifiableMPackage> pkgList = mlib.listMPackages();
+			Assert.assertArrayEquals( "Only one package", new ModifiableMPackage[]{testpkg}, pkgList.toArray());
 		} finally {
 			testpkg.delete();
 		}
@@ -105,12 +105,12 @@ public class TestMJDT {
 
 	@Test
 	public void testRenameMPackage() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
 			testpkg.setName("main02.sub02");
 			Assert.assertEquals( "New name of the package", "main02.sub02", testpkg.getName());
-			List<MPackage> pkgList = mlib.listMPackages();
-			Assert.assertArrayEquals( "Only one package", new MPackage[]{testpkg}, pkgList.toArray());
+			List<? extends ModifiableMPackage> pkgList = mlib.listMPackages();
+			Assert.assertArrayEquals( "Only one package", new ModifiableMPackage[]{testpkg}, pkgList.toArray());
 		} finally {
 			testpkg.delete();
 		}
@@ -118,10 +118,10 @@ public class TestMJDT {
 
 	@Test(expected = MyRuntimeException.class)
 	public void testDuplicateMClass() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			testpkg.createMClass("MClass01");
-			testpkg.createMClass("MClass01");
+			testpkg.createClass("MClass01");
+			testpkg.createClass("MClass01");
 		} finally {
 			testpkg.delete();
 		}
@@ -129,11 +129,11 @@ public class TestMJDT {
 
 	@Test
 	public void testListMClasses() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass testCls = testpkg.createMClass("MClass01");
-			List<MClass> clsList = testpkg.listMClasses();
-			Assert.assertArrayEquals( "Only one class", new MClass[]{testCls}, clsList.toArray());
+			ModifiableMClass testCls = testpkg.createClass("MClass01");
+			List<? extends ModifiableMClass> clsList = testpkg.listMClasses();
+			Assert.assertArrayEquals( "Only one class", new ModifiableMClass[]{testCls}, clsList.toArray());
 		} finally {
 			testpkg.delete();
 		}
@@ -141,13 +141,13 @@ public class TestMJDT {
 
 	@Test
 	public void testRenameMClass() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass testCls = testpkg.createMClass("MClass01");
+			ModifiableMClass testCls = testpkg.createClass("MClass01");
 			testCls.setName("MClass02");
 			Assert.assertEquals( "New name of the class", "MClass02", testCls.getName());
-			List<MClass> clsList = testpkg.listMClasses();
-			Assert.assertArrayEquals( "Only one class", new MClass[]{testCls}, clsList.toArray());
+			List<? extends ModifiableMClass> clsList = testpkg.listMClasses();
+			Assert.assertArrayEquals( "Only one class", new ModifiableMClass[]{testCls}, clsList.toArray());
 		} finally {
 			testpkg.delete();
 		}
@@ -155,15 +155,15 @@ public class TestMJDT {
 
 	@Test
 	public void testMoveMClass() {
-		MPackage testpkg1 = mlib.createMPackage("main01.sub01");
-		MPackage testpkg2 = mlib.createMPackage("main02.sub02");
+		ModifiableMPackage testpkg1 = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg2 = mlib.createMPackage("main02.sub02");
 		try {
-			MClass testCls = testpkg1.createMClass("MClass01");
+			ModifiableMClass testCls = testpkg1.createClass("MClass01");
 			testCls.setMPackage(testpkg2);
 			Assert.assertEquals( "New package of the class", testpkg2, testCls.getMPackage());
 			Assert.assertTrue( "First package is empty", testpkg1.listMClasses().isEmpty());
-			List<MClass> clsList2 = testpkg2.listMClasses();
-			Assert.assertArrayEquals( "Only one class in second package", new MClass[]{testCls}, clsList2.toArray());
+			List<? extends ModifiableMClass> clsList2 = testpkg2.listMClasses();
+			Assert.assertArrayEquals( "Only one class in second package", new ModifiableMClass[]{testCls}, clsList2.toArray());
 		} finally {
 			testpkg1.delete();
 		}
@@ -171,9 +171,9 @@ public class TestMJDT {
 
 	@Test
 	public void testDeleteMClass() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass testCls = testpkg.createMClass("MClass01");
+			ModifiableMClass testCls = testpkg.createClass("MClass01");
 			testCls.delete();
 			Assert.assertTrue( "Package is empty", testpkg.listMClasses().isEmpty());
 		} finally {
@@ -183,11 +183,11 @@ public class TestMJDT {
 
 	@Test(expected = MyRuntimeException.class)
 	public void testDuplicateMAttr() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass cls = testpkg.createMClass("MClass01");
-			cls.createMAttribute("attr01");
-			cls.createMAttribute("attr01");
+			ModifiableMClass cls = testpkg.createClass("MClass01");
+			cls.createAttribute("attr01");
+			cls.createAttribute("attr01");
 		} finally {
 			testpkg.delete();
 		}
@@ -195,12 +195,12 @@ public class TestMJDT {
 
 	@Test
 	public void testListMAttrs() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass cls = testpkg.createMClass("MClass01");
-			MAttr attr = cls.createMAttribute("attr01");
-			List<MAttr> attrList = cls.listMAttributes();
-			Assert.assertArrayEquals( "Only one attribute", new MAttr[]{attr}, attrList.toArray());
+			ModifiableMClass cls = testpkg.createClass("MClass01");
+			ModifiableMAttr attr = cls.createAttribute("attr01");
+			List<? extends MAttr> attrList = cls.listMAttributes();
+			Assert.assertArrayEquals( "Only one attribute", new ModifiableMAttr[]{attr}, attrList.toArray());
 		} finally {
 			testpkg.delete();
 		}
@@ -208,14 +208,14 @@ public class TestMJDT {
 
 	@Test
 	public void testRenameMAttr() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass cls = testpkg.createMClass("MClass01");
-			MAttr attr = cls.createMAttribute("attr01");
+			ModifiableMClass cls = testpkg.createClass("MClass01");
+			ModifiableMAttr attr = cls.createAttribute("attr01");
 			attr.setName("attr02");
 			Assert.assertEquals( "New name of the attr", "attr02", attr.getName());
-			List<MAttr> attrList = cls.listMAttributes();
-			Assert.assertArrayEquals( "Only one attribute", new MAttr[]{attr}, attrList.toArray());
+			List<? extends MAttr> attrList = cls.listMAttributes();
+			Assert.assertArrayEquals( "Only one attribute", new ModifiableMAttr[]{attr}, attrList.toArray());
 		} finally {
 			testpkg.delete();
 		}
@@ -223,16 +223,16 @@ public class TestMJDT {
 
 	@Test
 	public void testMoveMAttr() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass cls1 = testpkg.createMClass("MClass01");
-			MClass cls2 = testpkg.createMClass("MClass02");
-			MAttr attr = cls1.createMAttribute("attr01");
+			ModifiableMClass cls1 = testpkg.createClass("MClass01");
+			ModifiableMClass cls2 = testpkg.createClass("MClass02");
+			ModifiableMAttr attr = cls1.createAttribute("attr01");
 			attr.setMClass(cls2);
 			Assert.assertEquals( "New owner class of the attribute", cls2, attr.getMClass());
 			Assert.assertTrue( "First package is empty", testpkg.listMClasses().isEmpty());
-			List<MAttr> attrList = cls2.listMAttributes();
-			Assert.assertArrayEquals( "Only one attribute", new MAttr[]{attr}, attrList.toArray());
+			List<? extends MAttr> attrList = cls2.listMAttributes();
+			Assert.assertArrayEquals( "Only one attribute", new ModifiableMAttr[]{attr}, attrList.toArray());
 		} finally {
 			testpkg.delete();
 		}
@@ -240,10 +240,10 @@ public class TestMJDT {
 
 	@Test
 	public void testDeleteMAttr() {
-		MPackage testpkg = mlib.createMPackage("main01.sub01");
+		ModifiableMPackage testpkg = mlib.createMPackage("main01.sub01");
 		try {
-			MClass cls = testpkg.createMClass("MClass01");
-			MAttr attr = cls.createMAttribute("attr01");
+			ModifiableMClass cls = testpkg.createClass("MClass01");
+			ModifiableMAttr attr = cls.createAttribute("attr01");
 			attr.delete();
 			Assert.assertTrue( "Class has no attribute", cls.listMAttributes().isEmpty());
 		} finally {

@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import my.test.mmf.core.MAttr;
-import my.test.mmf.core.MClass;
-import my.test.mmf.core.MPackage;
+import my.test.mmf.core.ModifiableMAttr;
+import my.test.mmf.core.ModifiableMClass;
+import my.test.mmf.core.ModifiableMPackage;
 import my.test.mmf.core.util.EclipseUtils;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
@@ -25,7 +25,7 @@ import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.text.edits.TextEdit;
 
-public class MClassJDT implements MClass {
+public class MClassJDT implements ModifiableMClass {
 
 	private ICompilationUnit jdtCu;
 
@@ -104,12 +104,12 @@ public class MClassJDT implements MClass {
 	}
 
 	@Override
-	public MPackage getMPackage() {
+	public ModifiableMPackage getMPackage() {
 		return new MPackageJDT( ((IPackageFragment) jdtCu.getParent()).getCompilationUnit(MLibraryJDT.PACKAGE_INFO_CLASS + ".java") );
 	}
 
 	@Override
-	public void setMPackage(MPackage destMPackage) {
+	public void setMPackage(ModifiableMPackage destMPackage) {
 		try {
 			String destPackageName = destMPackage.getName();
 			IPackageFragmentRoot srcRoot = (IPackageFragmentRoot) jdtCu.getParent().getParent();
@@ -122,13 +122,13 @@ public class MClassJDT implements MClass {
 	}
 
 	@Override
-	public MAttr createMAttribute(String name) {
+	public ModifiableMAttr createAttribute(String name) {
 		return new MAttrJDT(jdtCu, name);
 	}
 
 	@Override
-	public List<MAttr> listMAttributes() {
-		List<MAttr> mattrList = new ArrayList<MAttr>();
+	public List<ModifiableMAttr> listMAttributes() {
+		List<ModifiableMAttr> mattrList = new ArrayList<ModifiableMAttr>();
 		try {
 			IType jdtType = jdtCu.findPrimaryType();
 			for (IField jdtField : jdtType.getFields()) {
@@ -153,7 +153,7 @@ public class MClassJDT implements MClass {
 
 	@Override
 	public String toString() {
-		return "(" + MClass.class.getSimpleName() + ")"
+		return "(" + ModifiableMClass.class.getSimpleName() + ")"
 				+ jdtCu.getParent().getElementName() + "." + jdtCu.getElementName();
 	}
 

@@ -3,8 +3,8 @@ package my.test.mmf.core.plugin;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import my.test.mmf.core.MPackage;
-import my.test.mmf.core.MLibrary;
+import my.test.mmf.core.ModifiableMPackage;
+import my.test.mmf.core.ModifiableMLibrary;
 import my.test.mmf.core.impl.jdt.MLibraryJDT;
 import my.test.mmf.core.util.EclipseUtils;
 
@@ -36,7 +36,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 	public void stop() {
 	}
 
-	static MLibrary mroot;
+	static ModifiableMLibrary mroot;
 	
 	@Override
 	public void run(IProgressMonitor monitor) throws CoreException {
@@ -72,12 +72,12 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 		
 		
 		{
-			MPackage testpkg = mroot.createMPackage("main01.sub02");
-			List<MPackage> topLevelPkgs = mroot.listMPackages();
+			ModifiableMPackage testpkg = mroot.createMPackage("main01.sub02");
+			List<? extends ModifiableMPackage> topLevelPkgs = mroot.listMPackages();
 			System.out.println(topLevelPkgs);			
 		}
 
-		final MPackage testpkg = mroot.createMPackage("main01.sub01");
+		final ModifiableMPackage testpkg = mroot.createMPackage("main01.sub01");
 		System.out.println(testpkg.getName());
 		testpkg.setName("main01.sub02");
 		System.out.println(testpkg.getName());
@@ -90,7 +90,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 
 		@Override
 		public void run(IProgressMonitor monitor) throws CoreException {
-			MPackage testpkg = mroot.createMPackage("wstrx.sub02");
+			ModifiableMPackage testpkg = mroot.createMPackage("wstrx.sub02");
 		}
 		
 	};
@@ -99,7 +99,7 @@ public class TestApp01 implements IApplication, IWorkspaceRunnable {
 
 		@Override
 		public void run(IProgressMonitor monitor) throws CoreException {
-			MPackage testpkg = mroot.createMPackage("wstrx.sub03");
+			ModifiableMPackage testpkg = mroot.createMPackage("wstrx.sub03");
 			//testpkg = mroot.createPackage("wstrx/sub02");
 			throw new JavaModelException(new Throwable("Iz�"), IJavaModelStatus.ERROR);
 		}

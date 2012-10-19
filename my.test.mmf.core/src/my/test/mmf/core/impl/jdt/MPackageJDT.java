@@ -3,9 +3,9 @@ package my.test.mmf.core.impl.jdt;
 import java.util.ArrayList;
 import java.util.List;
 
-import my.test.mmf.core.MClass;
-import my.test.mmf.core.MPackage;
-import my.test.mmf.core.MLibrary;
+import my.test.mmf.core.ModifiableMClass;
+import my.test.mmf.core.ModifiableMPackage;
+import my.test.mmf.core.ModifiableMLibrary;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
 
@@ -15,7 +15,7 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 
-public class MPackageJDT implements MPackage {
+public class MPackageJDT implements ModifiableMPackage {
 
 	private ICompilationUnit jdtPackageInfo;
 
@@ -45,7 +45,7 @@ public class MPackageJDT implements MPackage {
 	}
 
 	@Override
-	public MLibrary getMLibrary() {
+	public ModifiableMLibrary getMLibrary() {
 		return new MLibraryJDT((IPackageFragmentRoot) jdtPackageInfo.getParent());
 	}
 
@@ -61,8 +61,8 @@ public class MPackageJDT implements MPackage {
 	}
 
 	@Override
-	public List<MClass> listMClasses() {
-		List<MClass> mclassList = new ArrayList<MClass>();
+	public List<ModifiableMClass> listMClasses() {
+		List<ModifiableMClass> mclassList = new ArrayList<ModifiableMClass>();
 		try {
 			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
 					.getParent();
@@ -78,13 +78,13 @@ public class MPackageJDT implements MPackage {
 	}
 
 	@Override
-	public MClass createMClass(String name) {
+	public ModifiableMClass createClass(String name) {
 		return new MClassJDT(jdtPackageInfo, name);
 	}
 
 	@Override
 	public String toString() {
-		return "(" + MPackage.class.getSimpleName() + ")"
+		return "(" + ModifiableMPackage.class.getSimpleName() + ")"
 				+ jdtPackageInfo.getParent().getElementName();
 	}
 
