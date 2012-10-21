@@ -8,7 +8,7 @@ public interface MClass {
 
 	String getName();
 
-	public MPackage getMPackage();
+	MPackage getMPackage();
 
 	@Nullable MAttr getMAttribute( String name );
 

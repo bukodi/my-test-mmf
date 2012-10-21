@@ -13,14 +13,14 @@ import my.test.mmf.core.ModifiableMPackage;
 
 import org.eclipse.jdt.annotation.Nullable;
 
-public class MPackageImpl implements MPackage {
+public abstract class MPackageImpl implements MPackage {
 
 	private final MLibrary mlibrary;
 	private final Map<String,MClass> mclassesByName;
 	private final List<MClass> mclassesOrder;
 
-	protected MPackageImpl( Class<?> ... classes  ) {
-		this.mlibrary = null;
+	protected MPackageImpl(MLibrary mlibrary, Class<?> ... classes  ) {
+		this.mlibrary = mlibrary;
 		Map<String, MClass> mclassesByName = new HashMap<String, MClass>();
 		List<MClass> mclassesOrder = new ArrayList<MClass>();
 		for( Class<?> clazz : classes ) {
