@@ -129,31 +129,13 @@ public class MClassJDT implements ModifiableMClass {
 	@Override
 	@Nullable
 	public ModifiableMAttr getMAttribute(String name) {
-		IType jdtType = jdtCu.findPrimaryType();
-		IField jdtField = jdtType.getField(name);
-		try {
-			if( ! Flags.isStatic( jdtField.getFlags() )  )
-				return null;
-		} catch (JavaModelException e) {
-			throw new MyRuntimeException(e);
-		}
-		return new MAttrJDT(jdtField);
+		List<ModifiableMAttr> list = MAttrJDT.listAttributes(jdtCu, name);
+		return list.size() == 0 ? null : list.get(0);
 	}
 
 	@Override
 	public List<ModifiableMAttr> listMAttributes() {
-		List<ModifiableMAttr> mattrList = new ArrayList<ModifiableMAttr>();
-		try {
-			IType jdtType = jdtCu.findPrimaryType();
-			for (IField jdtField : jdtType.getFields()) {
-				if( ! Flags.isStatic( jdtField.getFlags() )  )
-					continue;
-				mattrList.add(new MAttrJDT(jdtField));
-			}
-		} catch (JavaModelException e) {
-			throw new MyRuntimeException(e);
-		}
-		return mattrList;
+		return MAttrJDT.listAttributes(jdtCu, null);
 	}
 
 	@Override

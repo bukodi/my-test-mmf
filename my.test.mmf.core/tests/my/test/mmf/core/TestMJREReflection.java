@@ -22,7 +22,7 @@ public class TestMJREReflection {
 		}
 	}
 
-	@Test
+	@Test 
 	public void testListMPackages() throws Exception {
 		MLibraryImpl mlib = _LibraryInfo_.INSTANCE;
 		List<MPackage> mpkgList = mlib.listMPackages();
