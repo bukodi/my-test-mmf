@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.ResourceBundle;
 
 import org.eclipse.jdt.annotation.Nullable;
 
@@ -45,6 +46,7 @@ public class MClassImpl implements MClass {
 		return beanDescriptor.getName();
 	}
 
+	
 	@Override
 	public MPackage getMPackage() {
 		return packageInfo;

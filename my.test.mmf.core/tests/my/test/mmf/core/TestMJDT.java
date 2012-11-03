@@ -230,9 +230,9 @@ public class TestMJDT {
 			ModifiableMAttr attr = cls1.createAttribute("attr01");
 			attr.setMClass(cls2);
 			Assert.assertEquals( "New owner class of the attribute", cls2, attr.getMClass());
-			Assert.assertTrue( "First package is empty", testpkg.listMClasses().isEmpty());
+			Assert.assertTrue( "First class has no attribute", cls1.listMAttributes().isEmpty());
 			List<? extends MAttr> attrList = cls2.listMAttributes();
-			Assert.assertArrayEquals( "Only one attribute", new ModifiableMAttr[]{attr}, attrList.toArray());
+			Assert.assertArrayEquals( "Second class has one attribute", new ModifiableMAttr[]{attr}, attrList.toArray());
 		} finally {
 			testpkg.delete();
 		}

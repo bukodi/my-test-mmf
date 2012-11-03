@@ -29,6 +29,10 @@ public class MClassJDT implements ModifiableMClass {
 
 	private ICompilationUnit jdtCu;
 
+	ICompilationUnit getJDTCompilationUnit() {
+		return jdtCu;
+	}
+	
 	public MClassJDT( ICompilationUnit jdtCu ) {
 		this.jdtCu = jdtCu;
 	}

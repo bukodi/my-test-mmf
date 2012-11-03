@@ -14,8 +14,10 @@ import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IMethod;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 
 public class MAttrJDT implements ModifiableMAttr {
@@ -23,35 +25,73 @@ public class MAttrJDT implements ModifiableMAttr {
 	private IMethod jdtGetter;
 	private IMethod jdtSetter;
 
-	MAttrJDT(IMethod jdtGetter ) {
+	MAttrJDT(IMethod jdtGetter) {
 		this.jdtGetter = jdtGetter;
-		// TODO: Find jdtSetter, if available
-		this.jdtSetter = jdtSetter;
+		String name = getterNameToAttrName(jdtGetter.getElementName());
+		IType jdtType = jdtGetter.getDeclaringType();
+		String setterName = "set" + Character.toUpperCase(name.charAt(0))
+				+ name.substring(1);
+		try {
+			this.jdtSetter = jdtType.getMethod(setterName,
+					new String[] { jdtGetter.getReturnType() });
+		} catch (JavaModelException e) {
+			throw new MyRuntimeException(e);
+		}
 	}
 
-	public MAttrJDT(ICompilationUnit jdtParent, String name ) {
+	private static String getterNameToAttrName(String methodName) {
+		if (methodName.startsWith("is")) {
+			return Character.toLowerCase(methodName.charAt(2))
+					+ methodName.substring(3);
+		} else if (methodName.startsWith("get")) {
+			return Character.toLowerCase(methodName.charAt(3))
+					+ methodName.substring(4);
+		} else {
+			throw new MyRuntimeException("Invalid getter name:" + methodName);
+		}
+	}
+
+	public MAttrJDT(ICompilationUnit jdtParent, String name) {
+		this(jdtParent, name, false);
+	}
+
+	public MAttrJDT(ICompilationUnit jdtParent, String name, boolean isReadOnly) {
 		ICompilationUnit workingCopy = null;
 		try {
 			if (jdtParent.findPrimaryType().getField(name).exists())
 				throw new MyRuntimeException("Attribute with name '" + name
 						+ "' already exists.");
 
-			if( ! Character.isLowerCase( name.charAt(0) ) )
-				throw new MyRuntimeException("First character must be lowercase: '" + name
-						+ "'");
-							
+			if (!Character.isLowerCase(name.charAt(0)))
+				throw new MyRuntimeException(
+						"First character must be lowercase: '" + name + "'");
+
 			IProgressMonitor monitor = MyMonitor.currentMonitor();
 			workingCopy = jdtParent.getWorkingCopy(monitor);
 			IType jdtType = workingCopy.findPrimaryType();
-			
-			String methodName = Character.toUpperCase( name.charAt(0) ) + name.substring(1);
+
+			String methodName = Character.toUpperCase(name.charAt(0))
+					+ name.substring(1);
 			String contents = "String get" + methodName + "();";
-			jdtGetter = jdtType.createMethod(contents, null, false, MyMonitor.currentMonitor());
-			contents = "void set" + methodName + "("+name+");";
-			jdtSetter = jdtType.createMethod(contents, null, false, MyMonitor.currentMonitor());
+			jdtGetter = jdtType.createMethod(contents, null, false, monitor);
+
+			if (!isReadOnly) {
+				contents = "void set" + methodName + "(" + name + ");";
+				jdtSetter = jdtType
+						.createMethod(contents, null, false, monitor);
+			}
+
 			workingCopy.commitWorkingCopy(false, monitor);
+
+			// Recreate methods, before discard working copy
+			jdtGetter = (IMethod) JavaCore.create(jdtGetter
+					.getHandleIdentifier());
+			if (jdtSetter != null)
+				jdtSetter = (IMethod) JavaCore.create(jdtSetter
+						.getHandleIdentifier());
 		} catch (JavaModelException e) {
-			throw new MyRuntimeException("Can not create attribute '" + name + "'.", e);
+			throw new MyRuntimeException("Can not create attribute '" + name
+					+ "'.", e);
 		} finally {
 			if (workingCopy != null)
 				try {
@@ -65,19 +105,64 @@ public class MAttrJDT implements ModifiableMAttr {
 	@Override
 	public String getName() {
 		String methodName = jdtGetter.getElementName();
-		if( methodName.startsWith("is") )
+		if (methodName.startsWith("is"))
 			methodName = methodName.substring(2);
-		else if( methodName.startsWith("get") )
+		else if (methodName.startsWith("get"))
 			methodName = methodName.substring(3);
 		else
-			throw new MyRuntimeException("Invalid getter name:" + methodName );
-		methodName = Character.toLowerCase( methodName.charAt(0) ) + methodName.substring(1);
+			throw new MyRuntimeException("Invalid getter name:" + methodName);
+		methodName = Character.toLowerCase(methodName.charAt(0))
+				+ methodName.substring(1);
 		return methodName;
 	}
 
 	@Override
 	public void setName(String name) {
-		throw new UnsupportedOperationException();
+		if (!Character.isLowerCase(name.charAt(0)))
+			throw new MyRuntimeException("First character must be lowercase: '"
+					+ name + "'");
+
+		ICompilationUnit workingCopy = null;
+		try {
+			String namePart = Character.toUpperCase(name.charAt(0))
+					+ name.substring(1);
+			String getterName = (jdtGetter.getElementName().startsWith("is") ? "is"
+					: "get")
+					+ namePart;
+			String setterName;
+
+			IProgressMonitor monitor = MyMonitor.currentMonitor();
+			workingCopy = jdtGetter.getCompilationUnit()
+					.getWorkingCopy(monitor);
+			IType wcType = workingCopy.findPrimaryType();
+			IMethod wcGetter = (wcType.findMethods(jdtGetter))[0];
+			wcGetter.rename(getterName, false, monitor);
+			if (jdtSetter != null) {
+				setterName = "set" + namePart;
+				IMethod wcSetter = (wcType.findMethods(jdtSetter))[0];
+				wcSetter.rename(setterName, false, monitor);
+			} else {
+				setterName = null;
+			}
+			workingCopy.commitWorkingCopy(false, monitor);
+
+			// Recreate methods, before discard working copy
+			jdtGetter = wcType.getMethod(getterName,
+					jdtGetter.getParameterTypes());
+			if (jdtSetter != null) {
+				jdtSetter = wcType.getMethod(setterName,
+						jdtSetter.getParameterTypes());
+			}
+		} catch (JavaModelException e) {
+			throw new MyRuntimeException("Rename " + this + " to " + name, e);
+		} finally {
+			if (workingCopy != null)
+				try {
+					workingCopy.discardWorkingCopy();
+				} catch (JavaModelException e) {
+					throw new MyRuntimeException(e);
+				}
+		}
 	}
 
 	@Override
@@ -87,18 +172,52 @@ public class MAttrJDT implements ModifiableMAttr {
 
 	@Override
 	public void setMClass(ModifiableMClass ownerMClass) {
-		throw new UnsupportedOperationException();
+		ICompilationUnit workingCopy = null;
+		try {
+			IProgressMonitor monitor = MyMonitor.currentMonitor();
+
+			IType newParent = ((MClassJDT) ownerMClass).getJDTCompilationUnit()
+					.findPrimaryType();
+			jdtGetter.move(newParent, null, null, false, monitor);
+			jdtGetter = newParent.getMethod(jdtGetter.getElementName(),
+					jdtGetter.getParameterTypes());
+			if (jdtSetter != null) {
+				jdtSetter.move(newParent, null, null, false, monitor);
+				jdtSetter = newParent.getMethod(jdtSetter.getElementName(),
+						jdtSetter.getParameterTypes());
+			}
+		} catch (JavaModelException e) {
+			throw new MyRuntimeException("Move " + this + " to " + ownerMClass
+					+ " failed.", e);
+		} finally {
+			if (workingCopy != null)
+				try {
+					workingCopy.discardWorkingCopy();
+				} catch (JavaModelException e) {
+					throw new MyRuntimeException(e);
+				}
+		}
 	}
 
 	@Override
 	public void delete() {
-		throw new UnsupportedOperationException();
+		try {
+			IProgressMonitor monitor = MyMonitor.currentMonitor();
+
+			jdtGetter.delete(false, monitor);
+			if (jdtSetter != null) {
+				jdtSetter.delete(false, monitor);
+			}
+		} catch (JavaModelException e) {
+			throw new MyRuntimeException("Delete " + this + " failed.", e);
+		}
 	}
 
 	@Override
 	public String toString() {
 		return "(" + ModifiableMAttr.class.getSimpleName() + ")"
-				+ jdtGetter.getParent().getElementName() + "#" + jdtGetter.getElementName();
+				+ jdtGetter.getParent().getElementName() + "#"
+				+ getName();
 	}
 
 	@Override
@@ -122,36 +241,43 @@ public class MAttrJDT implements ModifiableMAttr {
 		if (jdtGetter == null) {
 			if (other.jdtGetter != null)
 				return false;
-		} else if (!jdtGetter.equals(other.jdtGetter))
+		} else if (!jdtGetter.getKey().equals(other.jdtGetter.getKey()))
 			return false;
 		return true;
 	}
-	
-	static List<ModifiableMAttr> listAttributes( ITypeRoot jdtCu, @Nullable String name ) {
+
+	static List<ModifiableMAttr> listAttributes(ITypeRoot jdtCu,
+			@Nullable String name) {
 		List<ModifiableMAttr> mattrList = new ArrayList<ModifiableMAttr>();
 		try {
 			IType jdtType = jdtCu.findPrimaryType();
 			for (IMethod jdtGetter : jdtType.getMethods()) {
 				int flags = jdtGetter.getFlags();
-				if( Flags.isStatic( flags ) || Flags.isPrivate(flags) )
+				if (Flags.isStatic(flags) || Flags.isPrivate(flags))
 					continue;
 				String methodName = jdtGetter.getElementName();
 				String varName;
-				if( methodName.startsWith("is") ) {
+				if (methodName.startsWith("is")) {
 					String retTypeSignature = jdtGetter.getReturnType();
-					if(!( "Z".equals(retTypeSignature) || "QBoolean".equals(retTypeSignature) || "java.lang.Boolean".equals(retTypeSignature) ))
+					if (!("Z".equals(retTypeSignature)
+							|| "QBoolean".equals(retTypeSignature) || "java.lang.Boolean"
+								.equals(retTypeSignature)))
 						continue;
-					if( name != null && !name.equals(Character.toLowerCase(methodName.charAt(2)) + methodName.substring(3) ) )
+					if (name != null
+							&& !name.equals(Character.toLowerCase(methodName
+									.charAt(2)) + methodName.substring(3)))
 						continue;
-				} else if( methodName.startsWith("get") ) {
-					if( name != null && !name.equals(Character.toLowerCase(methodName.charAt(3)) + methodName.substring(4) ) )
-							continue;
+				} else if (methodName.startsWith("get")) {
+					if (name != null
+							&& !name.equals(Character.toLowerCase(methodName
+									.charAt(3)) + methodName.substring(4)))
+						continue;
 				} else {
 					continue;
 				}
 				mattrList.add(new MAttrJDT(jdtGetter));
 			}
-			if( name != null && mattrList.size() > 0 )
+			if (name != null && mattrList.size() > 0)
 				throw new MyRuntimeException("Ambiguous name:" + name);
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException(e);
