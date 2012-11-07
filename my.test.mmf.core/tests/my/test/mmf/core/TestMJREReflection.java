@@ -1,6 +1,5 @@
 package my.test.mmf.core;
 
-import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.List;
@@ -15,7 +14,7 @@ public class TestMJREReflection {
 	
 	@Test
 	public void testBeans() throws Exception {
-		BeanInfo beanInfo = Introspector.getBeanInfo(IEntity.class);
+		java.beans.BeanInfo beanInfo = Introspector.getBeanInfo(IEntity.class);
 		
 		for( PropertyDescriptor  pd : beanInfo.getPropertyDescriptors()) {
 			System.out.println(pd.getName()); 

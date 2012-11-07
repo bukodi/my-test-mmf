@@ -4,15 +4,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import my.test.mmf.core.MPackage;
 import my.test.mmf.core.ModifiableMLibrary;
 import my.test.mmf.core.ModifiableMPackage;
-import my.test.mmf.core.MPackage;
 import my.test.mmf.core.util.EclipseUtils;
 import my.test.mmf.core.util.MyMonitor;
 import my.test.mmf.core.util.MyRuntimeException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.ICompilationUnit;
 import org.eclipse.jdt.core.IJavaElement;
@@ -25,8 +24,6 @@ import org.eclipse.jdt.core.formatter.CodeFormatter;
 import org.eclipse.text.edits.TextEdit;
 
 public class MLibraryJDT implements ModifiableMLibrary {
-
-	final static String PACKAGE_INFO_CLASS = "_PackageInfo_";
 
 	private final IPackageFragmentRoot jdtSourceRoot;
 
@@ -47,7 +44,7 @@ public class MLibraryJDT implements ModifiableMLibrary {
 		if (name == null || name.length() == 0)
 			return null; // Skip the default package
 		ICompilationUnit jdtPackageInfo = jdtPkg
-				.getCompilationUnit(PACKAGE_INFO_CLASS + ".java");
+				.getCompilationUnit(MPackage.PACKAGE_INFO_CLASS + ".java");
 		if (!jdtPackageInfo.exists())
 			return null;
 		return new MPackageJDT(jdtPackageInfo);
@@ -78,7 +75,7 @@ public class MLibraryJDT implements ModifiableMLibrary {
 		try {
 			IPackageFragment pkgTest = jdtSourceRoot.getPackageFragment(name);
 			if (pkgTest != null && pkgTest.exists()) {
-				if (pkgTest.getCompilationUnit(PACKAGE_INFO_CLASS + ".java")
+				if (pkgTest.getCompilationUnit(MPackage.PACKAGE_INFO_CLASS + ".java")
 						.exists())
 					throw new MyRuntimeException("Package with name '" + name
 							+ "' already exists.");
@@ -87,9 +84,9 @@ public class MLibraryJDT implements ModifiableMLibrary {
 			IPackageFragment jdtPackage = jdtSourceRoot.createPackageFragment(
 					name, true, MyMonitor.currentMonitor());
 
-			String content = "public class " + PACKAGE_INFO_CLASS + " {}";
+			String content = "public class " + MPackage.PACKAGE_INFO_CLASS + " {}";
 			ICompilationUnit cu = jdtPackage.createCompilationUnit(
-					PACKAGE_INFO_CLASS + ".java", content, true, null);
+					MPackage.PACKAGE_INFO_CLASS + ".java", content, true, null);
 			workingCopy = cu.getWorkingCopy(monitor);
 			workingCopy.createPackageDeclaration(name, null);
 
@@ -114,7 +111,7 @@ public class MLibraryJDT implements ModifiableMLibrary {
 			workingCopy.commitWorkingCopy(false, monitor);
 
 			return new MPackageJDT(
-					jdtPackage.getCompilationUnit(PACKAGE_INFO_CLASS + ".java"));
+					jdtPackage.getCompilationUnit(MPackage.PACKAGE_INFO_CLASS + ".java"));
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Can not create '" + name
 					+ "' package.", e);

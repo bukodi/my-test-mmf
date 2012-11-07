@@ -1,9 +1,9 @@
 package my.test.mmf.core.impl.jdt;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import my.test.mmf.core.MPackage;
 import my.test.mmf.core.ModifiableMAttr;
 import my.test.mmf.core.ModifiableMClass;
 import my.test.mmf.core.ModifiableMPackage;
@@ -13,13 +13,10 @@ import my.test.mmf.core.util.MyRuntimeException;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IOpenable;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
-import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.ToolFactory;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
@@ -109,7 +106,7 @@ public class MClassJDT implements ModifiableMClass {
 
 	@Override
 	public ModifiableMPackage getMPackage() {
-		return new MPackageJDT( ((IPackageFragment) jdtCu.getParent()).getCompilationUnit(MLibraryJDT.PACKAGE_INFO_CLASS + ".java") );
+		return new MPackageJDT( ((IPackageFragment) jdtCu.getParent()).getCompilationUnit(MPackage.PACKAGE_INFO_CLASS + ".java") );
 	}
 
 	@Override

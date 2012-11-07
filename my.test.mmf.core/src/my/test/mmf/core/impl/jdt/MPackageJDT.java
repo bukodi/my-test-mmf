@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import my.test.mmf.core.MClass;
+import my.test.mmf.core.MPackage;
 import my.test.mmf.core.ModifiableMClass;
 import my.test.mmf.core.ModifiableMPackage;
 import my.test.mmf.core.ModifiableMLibrary;
@@ -39,7 +40,7 @@ public class MPackageJDT implements ModifiableMPackage {
 			jdtPkg.rename(name, false, MyMonitor.currentMonitor());
 			jdtPkg = srcRoot.getPackageFragment(name);
 			jdtPackageInfo = jdtPkg
-					.getCompilationUnit(MLibraryJDT.PACKAGE_INFO_CLASS + ".java");
+					.getCompilationUnit(MPackage.PACKAGE_INFO_CLASS + ".java");
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Rename " + this + " to " + name, e);
 		}
@@ -77,7 +78,7 @@ public class MPackageJDT implements ModifiableMPackage {
 			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
 					.getParent();
 			for (ICompilationUnit cu : jdtPackage.getCompilationUnits()) {
-				if( (MLibraryJDT.PACKAGE_INFO_CLASS + ".java").equals( cu.getElementName()) )
+				if( (MPackage.PACKAGE_INFO_CLASS + ".java").equals( cu.getElementName()) )
 					continue;
 				mclassList.add(new MClassJDT(cu));
 			}
