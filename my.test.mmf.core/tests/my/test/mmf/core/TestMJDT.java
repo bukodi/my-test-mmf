@@ -15,6 +15,7 @@ import org.eclipse.core.resources.IWorkspaceRoot;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.IVMInstall;
@@ -74,7 +75,8 @@ public class TestMJDT {
 		javaProject.setRawClasspath(
 				entries.toArray(new IClasspathEntry[entries.size()]), null);
 
-		mlib = new MLibraryJDT(srcRoot);
+		IPackageFragment pkg = srcRoot.createPackageFragment("main01", false, null);
+		mlib = new MLibraryJDT(pkg);
 	}
 
 	@AfterClass

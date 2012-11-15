@@ -13,6 +13,7 @@ import my.test.mmf.core.util.MyRuntimeException;
 
 import org.eclipse.jdt.annotation.Nullable;
 import org.eclipse.jdt.core.ICompilationUnit;
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
@@ -48,7 +49,7 @@ public class MPackageJDT implements ModifiableMPackage {
 
 	@Override
 	public ModifiableMLibrary getMLibrary() {
-		return new MLibraryJDT((IPackageFragmentRoot) jdtPackageInfo.getParent());
+		throw new UnsupportedOperationException("Currently not implemented"); //TODO
 	}
 
 	@Override
