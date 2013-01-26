@@ -28,7 +28,7 @@ import org.eclipse.text.edits.TextEdit;
 /**
  * Az osztály segítségével Java forrásokat hozhatunk létre.
  * 
- * 
+ * kiscica
  * @author lbukodi
  * 
  */

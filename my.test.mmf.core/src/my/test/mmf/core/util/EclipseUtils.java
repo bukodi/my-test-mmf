@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.internal.core.JavaElement;
 import org.osgi.service.prefs.BackingStoreException;
 
 public class EclipseUtils {
@@ -84,6 +85,14 @@ public class EclipseUtils {
 
 	}
 	
-	//public static void 
+	public static abstract class JDTEditor {
+		
+		JDTEditor( JavaElement jeElem   ) {
+			jeElem.getHandleIdentifier();
+		}
+		
+		abstract void doEdit( );
+		
+	}
 
 }

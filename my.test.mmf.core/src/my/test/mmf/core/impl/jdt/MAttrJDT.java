@@ -19,6 +19,7 @@ import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.WorkingCopyOwner;
 
 public class MAttrJDT implements ModifiableMAttr {
 
@@ -67,8 +68,11 @@ public class MAttrJDT implements ModifiableMAttr {
 						"First character must be lowercase: '" + name + "'");
 
 			IProgressMonitor monitor = MyMonitor.currentMonitor();
+			WorkingCopyOwner wco = new WorkingCopyOwner() {
+			};
 			workingCopy = jdtParent.getWorkingCopy(monitor);
 			IType jdtType = workingCopy.findPrimaryType();
+			
 
 			String methodName = Character.toUpperCase(name.charAt(0))
 					+ name.substring(1);
