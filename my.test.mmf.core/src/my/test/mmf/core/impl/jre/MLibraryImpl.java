@@ -21,7 +21,8 @@ public abstract class MLibraryImpl implements MLibrary {
 
 	private final Map<String, MPackage> mpackagesByName;
 	private final List<MPackage> mpackageOrder;
-
+	
+	@SafeVarargs
 	protected MLibraryImpl(Class<? extends MPackageImpl>... classes) {
 		Map<String, MPackage> mpackagesByName = new HashMap<String, MPackage>();
 		List<MPackage> mpackageOrder = new ArrayList<MPackage>();

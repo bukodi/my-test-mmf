@@ -21,7 +21,14 @@ import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.core.ToolFactory;
+import org.eclipse.jdt.core.dom.AST;
+import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.formatter.CodeFormatter;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
 import org.eclipse.text.edits.TextEdit;
 
 public class MLibraryJDT implements ModifiableMLibrary {
@@ -134,53 +141,95 @@ public class MLibraryJDT implements ModifiableMLibrary {
 	public ModifiableMPackage createMPackage(String name) {
 		ICompilationUnit workingCopy = null;
 		try {
-			IPackageFragmentRoot srcRoot = (IPackageFragmentRoot) jdtLibraryInfo
-					.getParent().getParent();
+			/** First part: create source for package */
+			IPackageFragment jdtPackage;
+			{
+				IPackageFragmentRoot srcRoot = (IPackageFragmentRoot) jdtLibraryInfo
+						.getParent().getParent();
 
-			IPackageFragment pkgTest = srcRoot.getPackageFragment(name);
-			if (pkgTest != null && pkgTest.exists()) {
-				if (pkgTest.getCompilationUnit(
-						MPackage.PACKAGE_INFO_CLASS + ".java").exists())
-					throw new MyRuntimeException("Package with name '" + name
-							+ "' already exists.");
+				IPackageFragment pkgTest = srcRoot.getPackageFragment(name);
+				if (pkgTest != null && pkgTest.exists()) {
+					if (pkgTest.getCompilationUnit(
+							MPackage.PACKAGE_INFO_CLASS + ".java").exists())
+						throw new MyRuntimeException("Package with name '"
+								+ name + "' already exists.");
+				}
+				IProgressMonitor monitor = MyMonitor.currentMonitor();
+				jdtPackage = srcRoot.createPackageFragment(name, true,
+						MyMonitor.currentMonitor());
+
+				String content = "public class " + MPackage.PACKAGE_INFO_CLASS
+						+ " {}";
+				ICompilationUnit cu = jdtPackage.createCompilationUnit(
+						MPackage.PACKAGE_INFO_CLASS + ".java", content, true,
+						null);
+				workingCopy = cu.getWorkingCopy(monitor);
+				workingCopy.createPackageDeclaration(name, null);
+
+				String source = ((IOpenable) workingCopy).getBuffer()
+						.getContents();
+
+				Map<?, ?> options = EclipseUtils
+						.getJdtCorePreferences(jdtPackage);
+
+				// instantiate the default code formatter with the given options
+				final CodeFormatter codeFormatter = ToolFactory
+						.createCodeFormatter(options, ToolFactory.M_FORMAT_NEW);
+
+				TextEdit edit = codeFormatter.format(
+						CodeFormatter.K_COMPILATION_UNIT, source, 0,
+						source.length(), 0, null);
+
+				if (edit == null) {
+					throw new MyRuntimeException("Can't format the source: "
+							+ source);
+				}
+
+				workingCopy.applyTextEdit(edit, monitor);
+				workingCopy.commitWorkingCopy(false, monitor);
 			}
-			IProgressMonitor monitor = MyMonitor.currentMonitor();
-			IPackageFragment jdtPackage = srcRoot.createPackageFragment(
-					name, true, MyMonitor.currentMonitor());
+			
+			/** Second part: add newly created package source to the library source */
+			{
+				   // creation of a Document
+				   ICompilationUnit cu = jdtLibraryInfo; // content is "public class X {\n}"
+				   String source = cu.getSource();
+				   Document document= new Document(source);
 
-			String content = "public class " + MPackage.PACKAGE_INFO_CLASS
-					+ " {}";
-			ICompilationUnit cu = jdtPackage.createCompilationUnit(
-					MPackage.PACKAGE_INFO_CLASS + ".java", content, true, null);
-			workingCopy = cu.getWorkingCopy(monitor);
-			workingCopy.createPackageDeclaration(name, null);
+				   // creation of DOM/AST from a ICompilationUnit
+				   ASTParser parser = ASTParser.newParser(AST.JLS4);
+				   parser.setSource(cu);
+				   CompilationUnit astRoot = (CompilationUnit) parser.createAST(null);
 
-			String source = ((IOpenable) workingCopy).getBuffer().getContents();
+				   // start record of the modifications
+				   astRoot.recordModifications();
 
-			Map<?, ?> options = EclipseUtils.getJdtCorePreferences(jdtPackage);
+				   // modify the AST
+				   TypeDeclaration typeDeclaration = (TypeDeclaration)astRoot.types().get(0);
+				   SimpleName newName = astRoot.getAST().newSimpleName("Y");
+				   typeDeclaration.setName(newName);
 
-			// instantiate the default code formatter with the given options
-			final CodeFormatter codeFormatter = ToolFactory
-					.createCodeFormatter(options, ToolFactory.M_FORMAT_NEW);
+				   // computation of the text edits
+				   TextEdit edits = astRoot.rewrite(document, cu.getJavaProject().getOptions(true));
 
-			TextEdit edit = codeFormatter.format(
-					CodeFormatter.K_COMPILATION_UNIT, source, 0,
-					source.length(), 0, null);
+				   // computation of the new source code
+				   edits.apply(document);
+				   String newSource = document.get();
 
-			if (edit == null) {
-				throw new MyRuntimeException("Can't format the source: "
-						+ source);
+				   // update of the compilation unit
+				   cu.getBuffer().setContents(newSource);				
 			}
 
-			workingCopy.applyTextEdit(edit, monitor);
-			workingCopy.commitWorkingCopy(false, monitor);
-
+			
 			return new MPackageJDT(
 					jdtPackage.getCompilationUnit(MPackage.PACKAGE_INFO_CLASS
 							+ ".java"));
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Can not create '" + name
 					+ "' package.", e);
+		} catch (BadLocationException ble) {
+			throw new MyRuntimeException("Can not create '" + name
+					+ "' package.", ble);
 		} finally {
 			if (workingCopy != null)
 				try {

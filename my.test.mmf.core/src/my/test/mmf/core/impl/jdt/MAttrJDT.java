@@ -78,7 +78,6 @@ public class MAttrJDT implements ModifiableMAttr {
 					+ name.substring(1);
 			String contents = "String get" + methodName + "();";
 			jdtGetter = jdtType.createMethod(contents, null, false, monitor);
-
 			if (!isReadOnly) {
 				contents = "void set" + methodName + "(" + name + ");";
 				jdtSetter = jdtType

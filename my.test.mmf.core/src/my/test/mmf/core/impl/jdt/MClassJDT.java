@@ -133,7 +133,7 @@ public class MClassJDT implements ModifiableMClass {
 		List<ModifiableMAttr> list = MAttrJDT.listAttributes(jdtCu, name);
 		return list.size() == 0 ? null : list.get(0);
 	}
-
+ 
 	@Override
 	public List<ModifiableMAttr> listMAttributes() {
 		return MAttrJDT.listAttributes(jdtCu, null);
