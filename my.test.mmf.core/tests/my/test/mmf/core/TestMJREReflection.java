@@ -23,22 +23,24 @@ public class TestMJREReflection {
 
 	@Test 
 	public void testListMPackages() throws Exception {
-		MLibraryImpl mlib = _LibraryInfo_.INSTANCE;
+		MLibraryImpl mlib = _LibraryInfo_.instance();
 		List<MPackage> mpkgList = mlib.listMPackages();
 		System.out.println(mpkgList);
 	}
 
 	@Test
 	public void testListMClasses() throws Exception {
-		MLibraryImpl mlib = _LibraryInfo_.INSTANCE;
-		List<? extends MClass> mclasses = mlib.listMPackages().get(0).listMClasses();
+		MLibraryImpl mlib = _LibraryInfo_.instance();
+		MPackage mpkg = mlib.listMPackages().get(0);
+		List<? extends MClass> mclasses = mpkg.listMClasses();
 		System.out.println(mclasses);
 	}
 
 	@Test
 	public void testListMAttrs() throws Exception {
-		MLibraryImpl mlib = _LibraryInfo_.INSTANCE;
-		for (MClass mclass : mlib.listMPackages().get(0).listMClasses())
+		MLibraryImpl mlib = _LibraryInfo_.instance();
+		MPackage mpkg = mlib.listMPackages().get(0);
+		for (MClass mclass : mpkg.listMClasses())
 			System.out.println(mclass.listMAttributes());
 	}
 

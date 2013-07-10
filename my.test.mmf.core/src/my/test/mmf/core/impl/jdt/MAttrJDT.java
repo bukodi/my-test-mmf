@@ -24,7 +24,7 @@ import org.eclipse.jdt.core.WorkingCopyOwner;
 public class MAttrJDT implements ModifiableMAttr {
 
 	private IMethod jdtGetter;
-	private IMethod jdtSetter;
+	private @Nullable IMethod jdtSetter;
 
 	MAttrJDT(IMethod jdtGetter) {
 		this.jdtGetter = jdtGetter;
@@ -72,7 +72,6 @@ public class MAttrJDT implements ModifiableMAttr {
 			};
 			workingCopy = jdtParent.getWorkingCopy(monitor);
 			IType jdtType = workingCopy.findPrimaryType();
-			
 
 			String methodName = Character.toUpperCase(name.charAt(0))
 					+ name.substring(1);
@@ -89,9 +88,9 @@ public class MAttrJDT implements ModifiableMAttr {
 			// Recreate methods, before discard working copy
 			jdtGetter = (IMethod) JavaCore.create(jdtGetter
 					.getHandleIdentifier());
-			if (jdtSetter != null)
-				jdtSetter = (IMethod) JavaCore.create(jdtSetter
-						.getHandleIdentifier());
+			final IMethod checkedJdtSetter = jdtSetter;
+			if (checkedJdtSetter != null) 
+				jdtSetter = (IMethod) JavaCore.create(checkedJdtSetter.getHandleIdentifier());
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Can not create attribute '" + name
 					+ "'.", e);
@@ -152,9 +151,10 @@ public class MAttrJDT implements ModifiableMAttr {
 			// Recreate methods, before discard working copy
 			jdtGetter = wcType.getMethod(getterName,
 					jdtGetter.getParameterTypes());
-			if (jdtSetter != null) {
+			final IMethod checkedJdtSetter = jdtSetter;
+			if (checkedJdtSetter != null) {
 				jdtSetter = wcType.getMethod(setterName,
-						jdtSetter.getParameterTypes());
+						checkedJdtSetter.getParameterTypes());
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Rename " + this + " to " + name, e);
@@ -184,10 +184,11 @@ public class MAttrJDT implements ModifiableMAttr {
 			jdtGetter.move(newParent, null, null, false, monitor);
 			jdtGetter = newParent.getMethod(jdtGetter.getElementName(),
 					jdtGetter.getParameterTypes());
-			if (jdtSetter != null) {
-				jdtSetter.move(newParent, null, null, false, monitor);
-				jdtSetter = newParent.getMethod(jdtSetter.getElementName(),
-						jdtSetter.getParameterTypes());
+			final IMethod checkedJdtSetter = jdtSetter;
+			if (checkedJdtSetter != null) {
+				checkedJdtSetter.move(newParent, null, null, false, monitor);
+				jdtSetter = newParent.getMethod(checkedJdtSetter.getElementName(),
+						checkedJdtSetter.getParameterTypes());
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Move " + this + " to " + ownerMClass
@@ -208,8 +209,9 @@ public class MAttrJDT implements ModifiableMAttr {
 			IProgressMonitor monitor = MyMonitor.currentMonitor();
 
 			jdtGetter.delete(false, monitor);
-			if (jdtSetter != null) {
-				jdtSetter.delete(false, monitor);
+			final IMethod checkedJdtSetter = jdtSetter;
+			if (checkedJdtSetter != null) {
+				checkedJdtSetter.delete(false, monitor);
 			}
 		} catch (JavaModelException e) {
 			throw new MyRuntimeException("Delete " + this + " failed.", e);
@@ -219,8 +221,7 @@ public class MAttrJDT implements ModifiableMAttr {
 	@Override
 	public String toString() {
 		return "(" + ModifiableMAttr.class.getSimpleName() + ")"
-				+ jdtGetter.getParent().getElementName() + "#"
-				+ getName();
+				+ jdtGetter.getParent().getElementName() + "#" + getName();
 	}
 
 	@Override

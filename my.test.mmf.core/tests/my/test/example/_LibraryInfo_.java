@@ -1,14 +1,15 @@
 package my.test.example;
 
+import my.test.mmf.core.MPackage;
 import my.test.mmf.core.impl.jre.MLibraryImpl;
 
 public class _LibraryInfo_ extends MLibraryImpl {
 	
-	public final static _LibraryInfo_ INSTANCE = new _LibraryInfo_();
+	private final static _LibraryInfo_ INSTANCE = new _LibraryInfo_();
 	
-	@SuppressWarnings("unchecked")
-	private _LibraryInfo_() {
-		super( _PackageInfo_.class );
-	}
+	public static _LibraryInfo_ instance() { return INSTANCE; }
+	
+	private _LibraryInfo_() {}
 
+	public final static _PackageInfo_ _default_package_ = INSTANCE.registerMPackage(_PackageInfo_.class);
 }

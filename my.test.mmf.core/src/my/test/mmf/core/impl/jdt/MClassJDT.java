@@ -34,12 +34,11 @@ public class MClassJDT implements ModifiableMClass {
 		this.jdtCu = jdtCu;
 	}
 
-	public MClassJDT( ICompilationUnit jdtPackageInfo, String name ) {
+	public MClassJDT( MPackageJDT mpkg, String name ) {
 		String fullname = "???."+ name;
 		ICompilationUnit workingCopy = null;
 		try {
-			IPackageFragment jdtPackage = (IPackageFragment) jdtPackageInfo
-					.getParent();
+			IPackageFragment jdtPackage = (IPackageFragment) mpkg.getJdtPackageInfo().getParent();
 			fullname = jdtPackage.getElementName() +"."+ name;
 			if (jdtPackage.getCompilationUnit(name + ".java").exists())
 				throw new MyRuntimeException("Class with name '" + fullname
